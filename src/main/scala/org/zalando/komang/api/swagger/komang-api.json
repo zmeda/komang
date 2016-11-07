@@ -1,0 +1,158 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Komang API",
+    "description": "Configuration Management - Komang API definition in swagger specification",
+    "version": "0.0.1",
+    "contact": {
+      "name": "Boris Malensek",
+      "email": "boris.malensek@zalando.de"
+    }
+  },
+  "host": "localhost:8080",
+  "schemes": [
+    "https"
+  ],
+  "basePath": "/",
+  "parameters": {
+    "X-Flow-Id": {
+      "name": "X-Flow-Id",
+      "in": "header",
+      "description": "A flow ID used for troubleshooting and tracking the application flow. The parameter is optional. In case it is not present the service will generate one.",
+      "required": false,
+      "type": "string",
+      "format": "uuid"
+    }
+  },
+  "paths": {
+    "/applications": {
+      "get": {
+        "summary": "Get all the applications",
+        "description": "Endpoint to retrieve all the applications unconditionally",
+        "parameters": [
+          {
+            "$ref": "#/parameters/X-Flow-Id"
+          }
+        ],
+        "tags": [
+          "Application"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list of applications",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Application"
+              }
+            }
+          },
+          "default": {
+            "description": "The default error handling",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new application",
+        "description": "An endpoint allowing users to create their own application",
+        "parameters": [
+          {
+            "$ref": "#/parameters/X-Flow-Id"
+          }
+        ],
+        "tags": [
+          "Application"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "description": "The resource has been created and new application ID is returned as a part of the header - Location",
+            "headers": {
+              "Location": {
+                "description": "The URL of the created application",
+                "type": "string",
+                "format": "url"
+              }
+            },
+            "schema": {
+              "$ref": "#/definitions/Application"
+            }
+          },
+          "400": {
+            "description": "The syntax of the payload is malformed",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "The default error handling",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Application": {
+      "type": "object",
+      "description": "An application that is defined by users",
+      "properties": {
+        "application_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "A unique identified of an application",
+          "example": "7e6b4e8c-bd7b-424c-a1a2-eaf561a2b2d1"
+        },
+        "name": {
+          "type": "string",
+          "description": "A human readable name of an application",
+          "example": "My Super App"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "Error": {
+      "type": "object",
+      "description": "A general error message for all error use cases",
+      "properties": {
+        "error_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "A unique identifier of an error (internal)",
+          "example": "7e6b4e8c-bd7b-424c-a1a2-eaf561a2b2d1"
+        },
+        "code": {
+          "type": "integer",
+          "description": "The HTTP Status code of an error",
+          "example": "404"
+        },
+        "internal_code": {
+          "type": "string",
+          "format": "uuid",
+          "description": "A service specific code, used for later tracking",
+          "example": "7e6b4e8c-bd7b-424c-a1a2-eaf561a2b2d1"
+        },
+        "description": {
+          "type": "string",
+          "description": "A human readable description of an error",
+          "example": "Provided JSON does not conform to requested schema"
+        }
+      }
+    }
+  }
+}
