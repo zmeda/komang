@@ -3,7 +3,7 @@ package org.zalando.komang.model
 import org.zalando.komang.model.Model.Application
 
 object Commands {
-  case class CreateApplication(application: Application)
+  sealed trait Command
 
-  case class CreateApplicationResponse(application: Application)
+  case class CreateApplication(application: Application) extends Command
 }

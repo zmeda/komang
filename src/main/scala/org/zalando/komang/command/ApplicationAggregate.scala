@@ -1,8 +1,8 @@
-package org.zalando.komang.api.command
+package org.zalando.komang.command
 
-import akka.actor.ActorLogging
+import akka.actor.{ActorLogging, Props}
 import akka.persistence.PersistentActor
-import org.zalando.komang.model.{Commands, Events}
+import org.zalando.komang.model.{Commands, Events, Responses}
 import org.zalando.komang.model.Model.Application
 
 class ApplicationAggregate extends PersistentActor with ActorLogging {
@@ -21,10 +21,14 @@ class ApplicationAggregate extends PersistentActor with ActorLogging {
     case _ @ Commands.CreateApplication(app) =>
       persist(Events.ApplicationCreated(app)) { evt =>
         updateState(evt)
-        sender() ! Commands.CreateApplicationResponse(app)
+        sender() ! Responses.CreateApplicationResponse(app)
       }
   }
 
   def updateState(event: Events.ApplicationCreated): Unit =
     applicationState = event.application
+}
+
+object ApplicationAggregate {
+  def props = Props(classOf[ApplicationAggregate])
 }
