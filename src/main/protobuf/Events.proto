@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package com.zalando.komang.protobuf;
+
+message Application {
+    string application_id = 1;
+}
+
+message ApplicationCreated {
+    Application application = 1;
+}

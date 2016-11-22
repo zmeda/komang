@@ -5,7 +5,7 @@ import akka.event.{Logging, LoggingAdapter}
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import org.zalando.komang.api.Api
-import org.zalando.komang.service.{KomangService, KomangServiceMockImpl}
+import org.zalando.komang.service.{KomangService, KomangServiceCQRSImpl, KomangServiceMockImpl}
 
 import scala.concurrent.ExecutionContext
 
@@ -17,5 +17,5 @@ trait Core extends Api {
 
   Http().bindAndHandle(route, "0.0.0.0", 8080)
 
-  override def komangService: KomangService = new KomangServiceMockImpl
+  override def komangService: KomangService = new KomangServiceCQRSImpl
 }
