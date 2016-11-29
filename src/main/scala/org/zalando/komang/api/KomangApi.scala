@@ -9,7 +9,10 @@ trait KomangApi extends KomangController {
       pathEndOrSingleSlash {
         get {
           getApplications
-        }
+        } ~
+          post {
+            createApplication
+          }
       }
     }
   }

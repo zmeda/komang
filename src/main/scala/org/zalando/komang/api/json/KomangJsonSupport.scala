@@ -3,23 +3,36 @@ package org.zalando.komang.api.json
 import java.util.UUID
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import org.zalando.komang.model.Model.{Application, ApplicationId}
+import org.zalando.komang.model.Model.{Application, ApplicationDraft, ApplicationId}
 import spray.json._
 import SprayJsonReadSupport._
 
 trait KomangJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit object ApplicationFormat extends RootJsonFormat[Application] {
     override def write(application: Application): JsValue = {
-      val applicationId = application.applicationId map ("application_id" -> _.toJson)
+      val applicationId = Some("application_id" -> application.applicationId.toJson)
       val name = Some("name" -> application.name.toJson)
       JsObject(collectSome(applicationId, name) toMap)
     }
 
     override def read(json: JsValue): Application = {
       val obj = json.asJsObject
-      val applicationId = (obj \? "application_id") map (_.convertTo[ApplicationId])
+      val applicationId = (obj \ "application_id").convertTo[ApplicationId]
       val name = (obj \ "name").asString
       Application(applicationId, name)
+    }
+  }
+
+  implicit object ApplicationDraftFormat extends RootJsonFormat[ApplicationDraft] {
+    override def write(applicationDraft: ApplicationDraft): JsValue = {
+      val name = Some("name" -> applicationDraft.name.toJson)
+      JsObject(collectSome(name) toMap)
+    }
+
+    override def read(json: JsValue): ApplicationDraft = {
+      val obj = json.asJsObject
+      val name = (obj \ "name").asString
+      ApplicationDraft(name)
     }
   }
 

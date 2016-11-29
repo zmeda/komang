@@ -5,5 +5,7 @@ import java.util.UUID
 object Model {
   case class ApplicationId(value: UUID)
 
-  case class Application(applicationId: Option[ApplicationId], name: String)
+  case class ApplicationDraft(name: String)
+
+  case class Application(applicationId: ApplicationId, name: String)
 }

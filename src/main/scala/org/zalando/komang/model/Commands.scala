@@ -1,9 +1,11 @@
 package org.zalando.komang.model
 
-import org.zalando.komang.model.Model.Application
+import org.zalando.komang.model.Model.ApplicationId
 
 object Commands {
-  sealed trait Command
+  sealed trait Command {
+    def applicationId: ApplicationId
+  }
 
-  case class CreateApplication(application: Application) extends Command
+  final case class CreateApplication(applicationId: ApplicationId, name: String) extends Command
 }
