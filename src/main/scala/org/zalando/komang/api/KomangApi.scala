@@ -12,6 +12,9 @@ trait KomangApi extends KomangController {
         } ~
           post {
             createApplication
+          } ~
+          patch {
+            updateApplication
           }
       }
     }

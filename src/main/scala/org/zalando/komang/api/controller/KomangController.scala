@@ -5,7 +5,7 @@ import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.Directives._
 import org.zalando.komang.api.json.KomangJsonSupport
-import org.zalando.komang.model.Model.ApplicationDraft
+import org.zalando.komang.api.ApiModel.{ApplicationDraft, ApplicationUpdate}
 import org.zalando.komang.service.KomangService
 
 import scala.concurrent.ExecutionContext
@@ -34,6 +34,12 @@ trait KomangController extends KomangJsonSupport {
             failWith(ex)
         }
       }
+    }
+  }
+
+  def updateApplication: Route = {
+    entity(as[ApplicationUpdate]) { applicationUpdate =>
+      complete(komangService.updateApplication(applicationUpdate))
     }
   }
 }

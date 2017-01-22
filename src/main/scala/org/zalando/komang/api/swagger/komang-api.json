@@ -102,6 +102,38 @@
             }
           }
         }
+      },
+      "patch": {
+        "summary": "Update a specific application",
+        "description": "Update one or more attributes of a specific application",
+        "parameters": [
+          {
+            "$ref": "#/parameters/X-Flow-Id"
+          }
+        ],
+        "tags": [
+          "Application"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an updated application",
+            "schema": {
+              "$ref": "#/definitions/Application"
+            }
+          },
+          "default": {
+            "description": "The default error handling",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
       }
     }
   },

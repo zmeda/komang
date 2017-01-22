@@ -3,8 +3,9 @@ package org.zalando.komang.command
 import akka.actor.{ActorLogging, Props}
 import akka.cluster.sharding.ShardRegion
 import akka.persistence.PersistentActor
-import org.zalando.komang.model.Commands.Command
-import org.zalando.komang.model.{Commands, Events, Responses}
+import org.zalando.komang.model.command._
+import org.zalando.komang.model.event._
+import org.zalando.komang.model.response._
 import org.zalando.komang.model.Model.Application
 
 class ApplicationAggregate extends PersistentActor with ActorLogging {
@@ -15,21 +16,21 @@ class ApplicationAggregate extends PersistentActor with ActorLogging {
   var applicationState: Application = _
 
   override def receiveRecover: Receive = {
-    case evt: Events.Event =>
+    case evt: Event =>
       updateState(evt)
   }
 
   override def receiveCommand: Receive = {
-    case cmd: Commands.CreateApplication =>
-      persist(Events.ApplicationCreated(cmd.applicationId, cmd.name)) { evt =>
+    case cmd: CreateApplicationCommand =>
+      persist(ApplicationCreatedEvent(cmd.applicationId, cmd.name)) { evt =>
         updateState(evt)
-        sender() ! Responses.CreateApplicationResponse(evt.applicationId)
+        sender() ! CreateApplicationResponse(evt.applicationId)
       }
   }
 
-  def updateState(event: Events.Event): Unit =
+  def updateState(event: Event): Unit =
     event match {
-      case Events.ApplicationCreated(applicationId, name) =>
+      case ApplicationCreatedEvent(applicationId, name) =>
         applicationState = Application(applicationId, name)
     }
 }
@@ -41,7 +42,7 @@ object ApplicationAggregate {
     case c: Command => (c.applicationId.value.toString, c)
   }
 
-  val numberOfShards = 100
+  private val numberOfShards = 100
 
   val extractShardId: ShardRegion.ExtractShardId = {
     case c: Command => Math.abs(c.applicationId.value.hashCode() % numberOfShards).toString

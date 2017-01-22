@@ -3,9 +3,10 @@ package org.zalando.komang.api.json
 import java.util.UUID
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import org.zalando.komang.model.Model.{Application, ApplicationDraft, ApplicationId}
+import org.zalando.komang.api.json.SprayJsonReadSupport._
+import org.zalando.komang.api.ApiModel.{ApplicationDraft, ApplicationUpdate}
+import org.zalando.komang.model.Model.{Application, ApplicationId}
 import spray.json._
-import SprayJsonReadSupport._
 
 trait KomangJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit object ApplicationFormat extends RootJsonFormat[Application] {
@@ -33,6 +34,19 @@ trait KomangJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
       val obj = json.asJsObject
       val name = (obj \ "name").asString
       ApplicationDraft(name)
+    }
+  }
+
+  implicit object ApplicationUpdateFormat extends RootJsonFormat[ApplicationUpdate] {
+    override def write(applicationUpdate: ApplicationUpdate): JsValue = {
+      val name = Some("name" -> applicationUpdate.name.toJson)
+      JsObject(collectSome(name) toMap)
+    }
+
+    override def read(json: JsValue): ApplicationUpdate = {
+      val obj = json.asJsObject
+      val name = (obj \ "name").asString
+      ApplicationUpdate(name)
     }
   }
 

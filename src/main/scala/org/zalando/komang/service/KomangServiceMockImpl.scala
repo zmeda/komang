@@ -1,7 +1,8 @@
 package org.zalando.komang.service
 import java.util.UUID
 
-import org.zalando.komang.model.Model.{Application, ApplicationDraft, ApplicationId}
+import org.zalando.komang.api.ApiModel.{ApplicationDraft, ApplicationUpdate}
+import org.zalando.komang.model.Model.{Application, ApplicationId}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -13,4 +14,7 @@ class KomangServiceMockImpl(implicit ec: ExecutionContext) extends KomangService
 
   override def createApplication(applicationDraft: ApplicationDraft): Future[ApplicationId] =
     Future(ApplicationId(UUID.randomUUID()))
+
+  override def updateApplication(applicationUpdate: ApplicationUpdate) =
+    Future(applicationList.head)
 }
