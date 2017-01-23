@@ -1,1 +1,0 @@
-CREATE TABLE IF NOT EXISTS "application" ("application_id" VARCHAR NOT NULL,"NAME" VARCHAR NOT NULL);

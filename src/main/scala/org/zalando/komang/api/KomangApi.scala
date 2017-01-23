@@ -2,6 +2,7 @@ package org.zalando.komang.api
 
 import akka.http.scaladsl.server.Directives._
 import org.zalando.komang.api.controller.KomangController
+import org.zalando.komang.api.TypedIdPathMatchers._
 
 trait KomangApi extends KomangController {
   val komangRoute = {
@@ -13,8 +14,13 @@ trait KomangApi extends KomangController {
           post {
             createApplication
           } ~
-          patch {
-            updateApplication
+          pathPrefix(ApplicationIdentity) { applicationId =>
+            get {
+              getApplication(applicationId)
+            } ~
+              patch {
+                updateApplication
+              }
           }
       }
     }

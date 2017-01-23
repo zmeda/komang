@@ -25,7 +25,7 @@ class KomangServiceCQRSImpl(komangDAO: KomangDAO)(implicit val actorSystem: Acto
       .getAllApplications()
       .map(_.map {
         case applicationRow =>
-          Application(ApplicationId(UUID.fromString(applicationRow.applicationId)), applicationRow.name)
+          Application(applicationRow.applicationId, applicationRow.name)
       }.toVector)
   }
 
@@ -37,7 +37,18 @@ class KomangServiceCQRSImpl(komangDAO: KomangDAO)(implicit val actorSystem: Acto
     }
   }
 
+  override def findApplication(applicationId: ApplicationId): Future[Option[Application]] = {
+    komangDAO
+      .getApplication(applicationId)
+      .map(_.map {
+        case applicationRow =>
+          Application(applicationRow.applicationId, applicationRow.name)
+      })
+  }
+
   override def updateApplication(applicationUpdate: ApplicationUpdate): Future[Application] = {
     ???
+    //val persistentActor = actorSystem.actorOf(ApplicationAggregate.props, applicationId.value.toString)
+    //persistentActor ? UpdateApplicationCommand(applicationId, )
   }
 }

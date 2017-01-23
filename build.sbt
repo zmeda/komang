@@ -29,9 +29,11 @@ lazy val libDeps = Seq(
   "org.fusesource.leveldbjni" % "leveldbjni-all" % "1.8",
   "com.typesafe.slick" %% "slick" % "3.1.1",
   "com.typesafe.slick" %% "slick-codegen" % "3.1.1",
-  "org.slf4j" % "slf4j-nop" % "1.6.4",
   "com.h2database" % "h2" % "1.4.191",
-  "com.trueaccord.scalapb" %% "compilerplugin" % "0.5.47"
+  "com.trueaccord.scalapb" %% "compilerplugin" % "0.5.47",
+  "ch.qos.logback" % "logback-classic" % "1.1.3",
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.5.0",
+  "org.flywaydb" % "flyway-core" % "3.2.1"
 )
 
 cancelable in Global := true
@@ -57,7 +59,7 @@ lazy val slickGenerate = taskKey[Seq[File]]("slick code generation from an exist
 slickGenerate := {
   import java.io.File
   val dbName = "komang"
-  val url = s"jdbc:h2:mem:$dbName;INIT=runscript from 'src/main/sql/create.sql'"
+  val url = s"jdbc:h2:mem:$dbName"
   val jdbcDriver = "org.h2.Driver"
   val slickDriver = "slick.driver.H2Driver"
   val resultRelativeDir = "src/main/scala-gen" // directory to create output scala slick definitions at
@@ -68,10 +70,11 @@ slickGenerate := {
   println(format + s"Backing up existing slick mappings source to: file://${baseDirectory.value}/$backupFilePath")
   println(format + s"About to auto-generate slick mappings source from database schema at $url...")
   //sbt.IO.copyFile(new File(resultFilePath), new File(backupFilePath))
-  (runner in Compile).value.run("slick.codegen.SourceCodeGenerator",
-                                (dependencyClasspath in Compile).value.files,
-                                Array(slickDriver, jdbcDriver, url, resultRelativeDir, targetPackageName),
-                                streams.value.log)
+//  (runner in Compile).value.run("org.zalando.komang.tools.KomangSlickCodeGenerator",
+//                                (dependencyClasspath in Compile).value.files,
+//                                Seq.empty,
+//                                streams.value.log)
+  (runMain in Compile).toTask(" org.zalando.komang.tools.KomangSlickCodeGenerator").value
   println(format + s"Result: file://${baseDirectory.value}/$resultFilePath" + scala.Console.RESET)
 //  val diff = (s"diff -u $resultFilePath $backupFilePath" #| "colordiff").!!
 //  println(scala.Console.BLUE + s"Changes compared to previous output file, follow, if any.\n\n $diff")

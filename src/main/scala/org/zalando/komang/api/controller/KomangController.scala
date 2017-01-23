@@ -5,7 +5,8 @@ import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.Directives._
 import org.zalando.komang.api.json.KomangJsonSupport
-import org.zalando.komang.api.ApiModel.{ApplicationDraft, ApplicationUpdate}
+import org.zalando.komang.api.ApiModel.{ApplicationDraft, ApplicationNotFoundException, ApplicationUpdate}
+import org.zalando.komang.model.Model.ApplicationId
 import org.zalando.komang.service.KomangService
 
 import scala.concurrent.ExecutionContext
@@ -18,6 +19,14 @@ trait KomangController extends KomangJsonSupport {
 
   def getApplications: Route = {
     complete(komangService.listApplications)
+  }
+
+  def getApplication(applicationId: ApplicationId): Route = {
+    complete {
+      komangService.findApplication(applicationId) map {
+        _.getOrElse(throw new ApplicationNotFoundException(applicationId))
+      }
+    }
   }
 
   def createApplication: Route = {

@@ -1,26 +1,39 @@
 package org.zalando.komang.core
 
+import akka.Done
 import akka.actor.{ActorRef, ActorSystem}
 import akka.cluster.sharding.{ClusterSharding, ClusterShardingSettings}
 import akka.event.{Logging, LoggingAdapter}
 import akka.http.scaladsl.Http
-import akka.persistence.query.{EventEnvelope, PersistenceQuery}
+import akka.persistence.query.{EventEnvelope2, PersistenceQuery, Sequence}
 import akka.persistence.query.journal.leveldb.scaladsl.LeveldbReadJournal
 import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.Sink
+import com.typesafe.scalalogging.LazyLogging
+import org.flywaydb.core.Flyway
 import org.zalando.komang.api.Api
 import org.zalando.komang.command._
 import org.zalando.komang.model.Model.Application
 import org.zalando.komang.model.event._
-import org.zalando.komang.query.KomangDAOImpl
+import org.zalando.komang.query.{ConfigSupport, KomangDAOImpl}
 import org.zalando.komang.service.{KomangService, KomangServiceCQRSImpl}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
-trait Core extends Api {
+trait Core extends Api with ConfigSupport with LazyLogging {
   implicit val actorSystem = ActorSystem()
   implicit val ec: ExecutionContext = actorSystem.dispatcher
   implicit val log: LoggingAdapter = Logging(actorSystem, getClass)
   implicit val materializer: ActorMaterializer = ActorMaterializer()
+
+  val flyway = new Flyway
+  flyway.setDataSource(
+    h2mem.getString("url"),
+    null,
+    null
+  )
+  flyway.setLocations("db.migration")
+  flyway.migrate()
 
   val komangDAO = new KomangDAOImpl()
 
@@ -28,33 +41,24 @@ trait Core extends Api {
 
   val readJournal = PersistenceQuery(actorSystem).readJournalFor[LeveldbReadJournal](LeveldbReadJournal.Identifier)
 
-  println("Start reading journal")
-  readJournal.allPersistenceIds().map {
-    case persistenceId =>
-      println(s"pId: $persistenceId")
-      readJournal.eventsByPersistenceId(persistenceId).map {
-        case EventEnvelope(offset, pId, seqNr, event) =>
-          println(s"event: $event")
-          event.asInstanceOf[Event] match {
-            case ac: ApplicationCreatedEvent =>
-              println(s"applicationCreate: $ac")
-              komangDAO.createApplication(Application(ac.applicationId, ac.name))
-          }
-      }
-  }
-//  readJournal.eventsByTag(tag = "my-tag", offset = Sequence(0L)).mapAsync(1) {
-//    case EventEnvelope2(offset, persistenceId, sequenceNr, event) =>
-//      println(s"event: $event")
-//      event.asInstanceOf[Event] match {
-//        case ac: ApplicationCreatedEvent =>
-//          println(s"applicationCreate: $ac")
-//          komangDAO.createApplication(Application(ac.applicationId, ac.name))
-//      }
-//    case a =>
-//      println(s"a: $a")
-//      Future.successful(Done)
-//  }
-  println("End reading journal")
+  logger.info("Start reading journal")
+  readJournal
+    .eventsByTag(tag = "my-tag", offset = Sequence(0L))
+    .mapAsync(1) {
+      case EventEnvelope2(offset, persistenceId, sequenceNr, event) =>
+        logger.info(
+          s"event from journal - event: $event; offset: $offset; persistenceId: $persistenceId; sequenceNr: $sequenceNr")
+        event.asInstanceOf[Event] match {
+          case ac: ApplicationCreatedEvent =>
+            logger.info(s"applicationCreate: $ac")
+            komangDAO.createApplication(Application(ac.applicationId, ac.name))
+        }
+      case a =>
+        logger.info(s"We received something else from journal: $a")
+        Future.successful(Done)
+    }
+    .runWith(Sink.ignore)
+  logger.info("End reading journal")
 
   Http().bindAndHandle(route, "0.0.0.0", 8080)
 }

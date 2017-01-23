@@ -10,5 +10,7 @@ trait KomangService {
 
   def createApplication(applicationDraft: ApplicationDraft): Future[ApplicationId]
 
+  def findApplication(applicationId: ApplicationId): Future[Option[Application]]
+
   def updateApplication(applicationUpdate: ApplicationUpdate): Future[Application]
 }
