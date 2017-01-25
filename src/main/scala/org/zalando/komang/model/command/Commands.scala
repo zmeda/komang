@@ -7,3 +7,5 @@ sealed trait Command {
 }
 
 final case class CreateApplicationCommand(applicationId: ApplicationId, name: String) extends Command
+
+final case class UpdateApplicationCommand(applicationId: ApplicationId, name: String) extends Command

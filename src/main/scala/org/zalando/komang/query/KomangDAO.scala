@@ -12,4 +12,6 @@ trait KomangDAO {
   def getApplication(applicationId: ApplicationId): Future[Option[Tables.ApplicationRow]]
 
   def createApplication(application: Application): Future[Done]
+
+  def updateApplication(application: Application): Future[Int]
 }

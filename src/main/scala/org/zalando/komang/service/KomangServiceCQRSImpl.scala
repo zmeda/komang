@@ -46,9 +46,11 @@ class KomangServiceCQRSImpl(komangDAO: KomangDAO)(implicit val actorSystem: Acto
       })
   }
 
-  override def updateApplication(applicationUpdate: ApplicationUpdate): Future[Application] = {
-    ???
-    //val persistentActor = actorSystem.actorOf(ApplicationAggregate.props, applicationId.value.toString)
-    //persistentActor ? UpdateApplicationCommand(applicationId, )
+  override def updateApplication(applicationId: ApplicationId,
+                                 applicationUpdate: ApplicationUpdate): Future[Application] = {
+    val persistentActor = actorSystem.actorOf(ApplicationAggregate.props, applicationId.value.toString)
+    persistentActor ? UpdateApplicationCommand(applicationId, applicationUpdate.name) map {
+      case response: UpdateApplicationResponse => response.application
+    }
   }
 }

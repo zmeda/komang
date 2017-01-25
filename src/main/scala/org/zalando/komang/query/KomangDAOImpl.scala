@@ -31,4 +31,9 @@ class KomangDAOImpl extends KomangDAO {
     val sql = Tables.Application += Tables.ApplicationRow(application.applicationId, application.name)
     db.run(sql).map(_ => Done)
   }
+
+  override def updateApplication(application: Application): Future[Int] = {
+    val findApp = Tables.Application.filter(_.applicationId === application.applicationId)
+    db.run(findApp.map(_.name).update(application.name))
+  }
 }

@@ -13,16 +13,16 @@ trait KomangApi extends KomangController {
         } ~
           post {
             createApplication
-          } ~
-          pathPrefix(ApplicationIdentity) { applicationId =>
-            get {
-              getApplication(applicationId)
-            } ~
-              patch {
-                updateApplication
-              }
           }
-      }
+      } ~
+        pathPrefix(ApplicationIdentity) { applicationId =>
+          get {
+            getApplication(applicationId)
+          } ~
+            patch {
+              updateApplication(applicationId)
+            }
+        }
     }
   }
 }

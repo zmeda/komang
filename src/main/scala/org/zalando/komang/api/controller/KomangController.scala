@@ -46,9 +46,9 @@ trait KomangController extends KomangJsonSupport {
     }
   }
 
-  def updateApplication: Route = {
+  def updateApplication(applicationId: ApplicationId): Route = {
     entity(as[ApplicationUpdate]) { applicationUpdate =>
-      complete(komangService.updateApplication(applicationUpdate))
+      complete(komangService.updateApplication(applicationId, applicationUpdate))
     }
   }
 }

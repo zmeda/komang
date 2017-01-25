@@ -6,3 +6,8 @@ message ApplicationCreatedEvent {
     string application_id = 1;
     string name = 2;
 }
+
+message ApplicationUpdatedEvent {
+    string application_id = 1;
+    string name = 2;
+}

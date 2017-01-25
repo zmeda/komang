@@ -18,7 +18,9 @@ import org.zalando.komang.model.event._
 import org.zalando.komang.query.{ConfigSupport, KomangDAOImpl}
 import org.zalando.komang.service.{KomangService, KomangServiceCQRSImpl}
 
-import scala.concurrent.{ExecutionContext, Future}
+import concurrent.duration._
+import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.util.control.NonFatal
 
 trait Core extends Api with ConfigSupport with LazyLogging {
   implicit val actorSystem = ActorSystem()
@@ -42,6 +44,7 @@ trait Core extends Api with ConfigSupport with LazyLogging {
   val readJournal = PersistenceQuery(actorSystem).readJournalFor[LeveldbReadJournal](LeveldbReadJournal.Identifier)
 
   logger.info("Start reading journal")
+
   readJournal
     .eventsByTag(tag = "my-tag", offset = Sequence(0L))
     .mapAsync(1) {
@@ -50,14 +53,21 @@ trait Core extends Api with ConfigSupport with LazyLogging {
           s"event from journal - event: $event; offset: $offset; persistenceId: $persistenceId; sequenceNr: $sequenceNr")
         event.asInstanceOf[Event] match {
           case ac: ApplicationCreatedEvent =>
-            logger.info(s"applicationCreate: $ac")
+            logger.info(s"applicationCreated: $ac")
             komangDAO.createApplication(Application(ac.applicationId, ac.name))
+          case au: ApplicationUpdatedEvent =>
+            logger.info(s"applicationUpdated: $au")
+            komangDAO.updateApplication(Application(au.applicationId, au.name))
         }
       case a =>
         logger.info(s"We received something else from journal: $a")
         Future.successful(Done)
     }
     .runWith(Sink.ignore)
+    .recover {
+      case NonFatal(e) => logger.error("Read stream failure", e)
+    }
+
   logger.info("End reading journal")
 
   Http().bindAndHandle(route, "0.0.0.0", 8080)

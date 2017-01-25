@@ -21,16 +21,23 @@ class ApplicationAggregate extends PersistentActor with ActorLogging {
   }
 
   override def receiveCommand: Receive = {
-    case cmd: CreateApplicationCommand =>
-      persist(ApplicationCreatedEvent(cmd.applicationId, cmd.name)) { evt =>
+    case cac: CreateApplicationCommand =>
+      persist(ApplicationCreatedEvent(cac.applicationId, cac.name)) { evt =>
         updateState(evt)
         sender() ! CreateApplicationResponse(evt.applicationId)
+      }
+    case uac: UpdateApplicationCommand =>
+      persist(ApplicationUpdatedEvent(uac.applicationId, uac.name)) { evt =>
+        updateState(evt)
+        sender() ! UpdateApplicationResponse(Application(evt.applicationId, evt.name))
       }
   }
 
   def updateState(event: Event): Unit =
     event match {
       case ApplicationCreatedEvent(applicationId, name) =>
+        applicationState = Application(applicationId, name)
+      case ApplicationUpdatedEvent(applicationId, name) =>
         applicationState = Application(applicationId, name)
     }
 }
