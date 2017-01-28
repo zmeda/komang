@@ -36,8 +36,6 @@ lazy val libDeps = Seq(
   "org.flywaydb" % "flyway-core" % "3.2.1"
 )
 
-cancelable in Global := true
-
 lazy val root = Project(
   id = "komang",
   base = file("."),

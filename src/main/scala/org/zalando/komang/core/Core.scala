@@ -70,6 +70,14 @@ trait Core extends Api with ConfigSupport with LazyLogging {
 
   logger.info("End reading journal")
 
+  logger.info("Add shutdown hook")
+  sys.addShutdownHook {
+    logger.info("Terminating...")
+    actorSystem.terminate()
+    Await.result(actorSystem.whenTerminated, 30.seconds)
+    logger.info("Terminated... Bye")
+  }
+
   Http().bindAndHandle(route, "0.0.0.0", 8080)
 }
 
