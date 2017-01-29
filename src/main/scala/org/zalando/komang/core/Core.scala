@@ -13,7 +13,7 @@ import com.typesafe.scalalogging.LazyLogging
 import org.flywaydb.core.Flyway
 import org.zalando.komang.api.Api
 import org.zalando.komang.command._
-import org.zalando.komang.model.Model.Application
+import org.zalando.komang.model.Model.{Application, Profile}
 import org.zalando.komang.model.event._
 import org.zalando.komang.query.{ConfigSupport, KomangDAOImpl}
 import org.zalando.komang.service.{KomangService, KomangServiceCQRSImpl}
@@ -58,6 +58,9 @@ trait Core extends Api with ConfigSupport with LazyLogging {
           case au: ApplicationUpdatedEvent =>
             logger.info(s"applicationUpdated: $au")
             komangDAO.updateApplication(Application(au.applicationId, au.name))
+          case pc: ProfileCreatedEvent =>
+            logger.info(s"profileCreate: $pc")
+            komangDAO.createProfile(pc.applicationId, Profile(pc.profileId, pc.name))
         }
       case a =>
         logger.info(s"We received something else from journal: $a")

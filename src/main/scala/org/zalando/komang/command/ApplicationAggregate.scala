@@ -6,7 +6,7 @@ import akka.persistence.PersistentActor
 import org.zalando.komang.model.command._
 import org.zalando.komang.model.event._
 import org.zalando.komang.model.response._
-import org.zalando.komang.model.Model.Application
+import org.zalando.komang.model.Model.{Application, Profile}
 
 class ApplicationAggregate extends PersistentActor with ActorLogging {
   val name = context.self.path.name
@@ -31,6 +31,11 @@ class ApplicationAggregate extends PersistentActor with ActorLogging {
         updateState(evt)
         sender() ! UpdateApplicationResponse(Application(evt.applicationId, evt.name))
       }
+    case cpc: CreateProfileCommand =>
+      persist(ProfileCreatedEvent(cpc.applicationId, cpc.profileId, cpc.name)) { evt =>
+        updateState(evt)
+        sender() ! CreateProfileResponse(evt.applicationId, evt.profileId)
+      }
   }
 
   def updateState(event: Event): Unit =
@@ -39,6 +44,8 @@ class ApplicationAggregate extends PersistentActor with ActorLogging {
         applicationState = Application(applicationId, name)
       case ApplicationUpdatedEvent(applicationId, name) =>
         applicationState = Application(applicationId, name)
+      case ProfileCreatedEvent(_, profileId, name) =>
+        applicationState = applicationState.copy(profiles = Profile(profileId, name) :: applicationState.profiles)
     }
 }
 

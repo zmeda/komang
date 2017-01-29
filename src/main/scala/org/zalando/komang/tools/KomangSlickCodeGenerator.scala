@@ -37,11 +37,18 @@ object KomangSlickCodeGenerator {
         """
         |import java.util.UUID
         |import org.zalando.komang.model.Model.ApplicationId
+        |import org.zalando.komang.model.Model.ProfileId
         |
         |/** Implicit for mapping ApplicationId to String and reverse */
         |implicit val applicationIdColumnType = MappedColumnType.base[ApplicationId, String](
         |  { aId => aId.value.toString },
         |  { str => ApplicationId(UUID.fromString(str)) }
+        |)
+        |
+        |/** Implicit for mapping ProfileId to String and reverse */
+        |implicit val profileIdColumnType = MappedColumnType.base[ProfileId, String](
+        |  { pId => pId.value.toString },
+        |  { str => ProfileId(UUID.fromString(str)) }
         |)
       """.stripMargin + "\n" + super.code
 
@@ -49,6 +56,7 @@ object KomangSlickCodeGenerator {
         override def Column = new Column(_) {
           override def rawType = this.model.name match {
             case "application_id" => "ApplicationId"
+            case "profile_id" => "ProfileId"
             case _ => super.rawType
           }
         }
