@@ -10,3 +10,5 @@ case class ApplicationCreatedEvent(applicationId: ApplicationId, name: Applicati
 case class ApplicationUpdatedEvent(applicationId: ApplicationId, name: ApplicationName) extends Event
 
 case class ProfileCreatedEvent(applicationId: ApplicationId, profileId: ProfileId, name: ProfileName) extends Event
+
+case class ProfileUpdatedEvent(applicationId: ApplicationId, profileId: ProfileId, name: ProfileName) extends Event

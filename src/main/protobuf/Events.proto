@@ -17,3 +17,9 @@ message ProfileCreatedEvent {
     string profile_id = 2;
     string name = 3;
 }
+
+message ProfileUpdatedEvent {
+    string application_id = 1;
+    string profile_id = 2;
+    string name = 3;
+}

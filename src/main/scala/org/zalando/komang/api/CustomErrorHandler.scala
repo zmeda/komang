@@ -2,7 +2,7 @@ package org.zalando.komang.api
 
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.{Directives, ExceptionHandler, RejectionHandler}
-import org.zalando.komang.api.ApiModel.ApplicationNotFoundException
+import org.zalando.komang.api.ApiModel.{ApplicationNotFoundException, ProfileNotFoundException}
 
 import scala.util.control.NonFatal
 
@@ -13,6 +13,13 @@ trait CustomErrorHandler extends Directives {
         extractLog { logger => ctx =>
           logger.error(s"Application with id {} does not exist", aId.value.toString)
           ctx.complete((NotFound, s"Application with id $aId not found"))
+        }
+      case ProfileNotFoundException(aId, pId) =>
+        extractLog { logger => ctx =>
+          logger.error(s"Profile with id {} does not exist for application with id {}",
+                       pId.value.toString,
+                       aId.value.toString)
+          ctx.complete((NotFound, s"Profile with id $pId not found for application with id $aId"))
         }
       case NonFatal(e) =>
         extractLog { logger => ctx =>

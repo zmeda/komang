@@ -5,13 +5,8 @@ import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.Directives._
 import org.zalando.komang.api.json.KomangJsonSupport
-import org.zalando.komang.api.ApiModel.{
-  ApplicationDraft,
-  ApplicationNotFoundException,
-  ApplicationUpdate,
-  ProfileDraft
-}
-import org.zalando.komang.model.Model.ApplicationId
+import org.zalando.komang.api.ApiModel._
+import org.zalando.komang.model.Model.{ApplicationId, ProfileId}
 import org.zalando.komang.service.KomangService
 
 import scala.concurrent.ExecutionContext
@@ -57,12 +52,24 @@ trait KomangController extends KomangJsonSupport {
     }
   }
 
+  def getProfiles(applicationId: ApplicationId): Route = {
+    complete(komangService.listProfiles(applicationId))
+  }
+
+  def getProfile(applicationId: ApplicationId, profileId: ProfileId): Route = {
+    complete {
+      komangService.findProfile(applicationId, profileId) map {
+        _.getOrElse(throw new ProfileNotFoundException(applicationId, profileId))
+      }
+    }
+  }
+
   def createProfile(applicationId: ApplicationId): Route = {
     extractRequest { request =>
       entity(as[ProfileDraft]) { profileDraft =>
         onComplete(komangService.createProfile(applicationId, profileDraft)) {
           case Success((applicationId, profileId)) => {
-            respondWithHeader(Location(s"${request.uri}/${applicationId.value}/profiles/${profileId.value}")) {
+            respondWithHeader(Location(s"${request.uri}/${profileId.value}")) {
               complete(
                 HttpResponse(status = StatusCodes.Created, entity = HttpEntity.empty(request.entity.contentType)))
             }
@@ -71,6 +78,12 @@ trait KomangController extends KomangJsonSupport {
             failWith(ex)
         }
       }
+    }
+  }
+
+  def updateProfile(applicationId: ApplicationId, profileId: ProfileId): Route = {
+    entity(as[ProfileUpdate]) { profileUpdate =>
+      complete(komangService.updateProfile(applicationId, profileId, profileUpdate))
     }
   }
 }

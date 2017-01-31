@@ -1,7 +1,7 @@
 package org.zalando.komang.service
 
-import org.zalando.komang.api.ApiModel.{ApplicationDraft, ApplicationUpdate, ProfileDraft}
-import org.zalando.komang.model.Model.{Application, ApplicationId, ProfileId}
+import org.zalando.komang.api.ApiModel._
+import org.zalando.komang.model.Model._
 
 import scala.concurrent.Future
 
@@ -14,5 +14,11 @@ trait KomangService {
 
   def updateApplication(applicationId: ApplicationId, applicationUpdate: ApplicationUpdate): Future[Application]
 
+  def listProfiles(applicationId: ApplicationId): Future[Vector[Profile]]
+
+  def findProfile(applicationId: ApplicationId, profileId: ProfileId): Future[Option[Profile]]
+
   def createProfile(applicationId: ApplicationId, profileDraft: ProfileDraft): Future[(ApplicationId, ProfileId)]
+
+  def updateProfile(applicationId: ApplicationId, profileId: ProfileId, profileUpdate: ProfileUpdate): Future[Profile]
 }

@@ -15,7 +15,7 @@ import org.zalando.komang.query.KomangDAO
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 
-class lKomangServiceCQRSImpl(komangDAO: KomangDAO)(implicit val actorSystem: ActorSystem) extends KomangService {
+class KomangServiceCQRSImpl(komangDAO: KomangDAO)(implicit val actorSystem: ActorSystem) extends KomangService {
   implicit val timeout: Timeout = Timeout(500.millis)
 
   implicit val ec: ExecutionContext = actorSystem.dispatcher
@@ -56,6 +56,23 @@ class lKomangServiceCQRSImpl(komangDAO: KomangDAO)(implicit val actorSystem: Act
     }
   }
 
+  override def listProfiles(applicationId: ApplicationId): Future[Vector[Profile]] = {
+    komangDAO
+      .getAllProfiles(applicationId)
+      .map(_.map {
+        case profileRow => Profile(profileRow.profileId, ProfileName(profileRow.name))
+      }.toVector)
+  }
+
+  override def findProfile(applicationId: ApplicationId, profileId: ProfileId): Future[Option[Profile]] = {
+    komangDAO
+      .getProfile(applicationId, profileId)
+      .map(_.map {
+        case profileRow =>
+          Profile(profileRow.profileId, ProfileName(profileRow.name))
+      })
+  }
+
   override def createProfile(applicationId: ApplicationId,
                              profileDraft: ProfileDraft): Future[(ApplicationId, ProfileId)] = {
     val profileIdUUID = UUID.randomUUID
@@ -63,6 +80,14 @@ class lKomangServiceCQRSImpl(komangDAO: KomangDAO)(implicit val actorSystem: Act
                                                                    ProfileId(profileIdUUID),
                                                                    profileDraft.name) map {
       case response: CreateProfileResponse => (response.applicationId, response.profileId)
+    }
+  }
+
+  override def updateProfile(applicationId: ApplicationId,
+                             profileId: ProfileId,
+                             profileUpdate: ProfileUpdate): Future[Profile] = {
+    getPersistentActor(applicationId.value) ? UpdateProfileCommand(applicationId, profileId, profileUpdate.name) map {
+      case response: UpdateProfileResponse => response.profile
     }
   }
 }

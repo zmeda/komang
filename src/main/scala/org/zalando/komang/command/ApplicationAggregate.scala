@@ -36,6 +36,11 @@ class ApplicationAggregate extends PersistentActor with ActorLogging {
         updateState(evt)
         sender() ! CreateProfileResponse(evt.applicationId, evt.profileId)
       }
+    case upc: UpdateProfileCommand =>
+      persist(ProfileCreatedEvent(upc.applicationId, upc.profileId, upc.name)) { evt =>
+        updateState(evt)
+        sender() ! UpdateProfileResponse(Profile(evt.profileId, evt.name))
+      }
   }
 
   def updateState(event: Event): Unit =
@@ -46,6 +51,11 @@ class ApplicationAggregate extends PersistentActor with ActorLogging {
         applicationState = Application(applicationId, name)
       case ProfileCreatedEvent(_, profileId, name) =>
         applicationState = applicationState.copy(profiles = Profile(profileId, name) :: applicationState.profiles)
+      case ProfileUpdatedEvent(_, profileId, name) =>
+        applicationState = applicationState.copy(profiles = applicationState.profiles map {
+          case Profile(`profileId`, _) => Profile(profileId, name)
+          case profile => profile
+        })
     }
 }
 

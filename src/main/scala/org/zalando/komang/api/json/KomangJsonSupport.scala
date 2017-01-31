@@ -4,8 +4,8 @@ import java.util.UUID
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import org.zalando.komang.api.json.SprayJsonReadSupport._
-import org.zalando.komang.api.ApiModel.{ApplicationDraft, ApplicationUpdate, ProfileDraft}
-import org.zalando.komang.model.Model.{Application, ApplicationId, ApplicationName, ProfileName}
+import org.zalando.komang.api.ApiModel.{ApplicationDraft, ApplicationUpdate, ProfileDraft, ProfileUpdate}
+import org.zalando.komang.model.Model._
 import spray.json._
 
 trait KomangJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
@@ -90,6 +90,19 @@ trait KomangJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
     }
   }
 
+  implicit object ProfileUpdateFormat extends RootJsonFormat[ProfileUpdate] {
+    override def write(profileUpdate: ProfileUpdate): JsValue = {
+      val name = Some("name" -> profileUpdate.name.toJson)
+      JsObject(collectSome(name) toMap)
+    }
+
+    override def read(json: JsValue): ProfileUpdate = {
+      val obj = json.asJsObject
+      val name = (obj \ "name").convertTo[ProfileName]
+      ProfileUpdate(name)
+    }
+  }
+
   implicit object ProfileNameFormat extends JsonFormat[ProfileName] {
     override def write(profileName: ProfileName): JsValue =
       JsString(profileName.value.toString)
@@ -98,6 +111,36 @@ trait KomangJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
       json match {
         case JsString(str) =>
           ProfileName(str)
+        case x => deserializationError(s"Expected type String but got $x")
+      }
+  }
+
+  implicit object ProfileFormat extends RootJsonFormat[Profile] {
+    override def write(profile: Profile): JsValue = {
+      val profileId = Some("profile_id" -> profile.profileId.toJson)
+      val name = Some("name" -> profile.name.toJson)
+      JsObject(collectSome(profileId, name) toMap)
+    }
+
+    override def read(json: JsValue): Profile = {
+      val obj = json.asJsObject
+      val profileId = (obj \ "profile_id").convertTo[ProfileId]
+      val name = (obj \ "name").convertTo[ProfileName]
+      Profile(profileId, name)
+    }
+  }
+
+  implicit object ProfileIdFormat extends JsonFormat[ProfileId] {
+    override def write(profileId: ProfileId): JsValue =
+      JsString(profileId.value.toString)
+
+    override def read(json: JsValue): ProfileId =
+      json match {
+        case JsString(str) =>
+          parseUuidString(str) match {
+            case None => deserializationError(s"Expected UUID but got $str")
+            case Some(uuid) => ProfileId(uuid)
+          }
         case x => deserializationError(s"Expected type String but got $x")
       }
   }

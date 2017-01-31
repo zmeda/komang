@@ -12,3 +12,6 @@ final case class UpdateApplicationCommand(applicationId: ApplicationId, name: Ap
 
 final case class CreateProfileCommand(applicationId: ApplicationId, profileId: ProfileId, name: ProfileName)
     extends Command
+
+final case class UpdateProfileCommand(applicationId: ApplicationId, profileId: ProfileId, name: ProfileName)
+    extends Command
