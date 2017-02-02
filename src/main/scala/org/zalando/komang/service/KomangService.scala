@@ -21,4 +21,12 @@ trait KomangService {
   def createProfile(applicationId: ApplicationId, profileDraft: ProfileDraft): Future[(ApplicationId, ProfileId)]
 
   def updateProfile(applicationId: ApplicationId, profileId: ProfileId, profileUpdate: ProfileUpdate): Future[Profile]
+
+  def listConfigs(profileId: ProfileId): Future[Vector[Config]]
+
+  def findConfig(profileId: ProfileId, configId: ConfigId): Future[Option[Config]]
+
+  def createConfig(applicationId: ApplicationId, profileId: ProfileId, configDraft: ConfigDraft): Future[ConfigId]
+
+  def updateConfig(applicationId: ApplicationId, profileId: ProfileId, configUpdate: ConfigUpdate): Future[Config]
 }

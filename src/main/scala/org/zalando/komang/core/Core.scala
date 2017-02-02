@@ -64,6 +64,7 @@ trait Core extends Api with ConfigSupport with LazyLogging {
           case up: ProfileUpdatedEvent =>
             logger.info(s"profileUpdated: $up")
             komangDAO.updateProfile(up.applicationId, Profile(up.profileId, up.name))
+            // TODO other events
         }
       case a =>
         logger.info(s"We received something else from journal: $a")

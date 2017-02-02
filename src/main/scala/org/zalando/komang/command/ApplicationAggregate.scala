@@ -41,6 +41,14 @@ class ApplicationAggregate extends PersistentActor with ActorLogging {
         updateState(evt)
         sender() ! UpdateProfileResponse(Profile(evt.profileId, evt.name))
       }
+    case ccc: CreateConfigCommand =>
+      persist(ConfigCreatedEvent(ccc.profileId, ccc.configId, ccc.name, ccc.`type`, ccc.value)) { evt =>
+        updateState(evt)
+        sender() ! CreateConfigResponse(evt.configId)
+      }
+    case ucc: UpdateConfigCommand =>
+      // TODO multiple events
+      ???
   }
 
   def updateState(event: Event): Unit =
@@ -53,22 +61,23 @@ class ApplicationAggregate extends PersistentActor with ActorLogging {
         applicationState = applicationState.copy(profiles = Profile(profileId, name) :: applicationState.profiles)
       case ProfileUpdatedEvent(_, profileId, name) =>
         applicationState = applicationState.copy(profiles = applicationState.profiles map {
-          case Profile(`profileId`, _) => Profile(profileId, name)
+          case Profile(`profileId`, _, configs) => Profile(profileId, name, configs)
           case profile => profile
         })
+        // TODO other events
     }
 }
 
 object ApplicationAggregate {
   def props = Props(classOf[ApplicationAggregate])
 
-  val extractEntityId: ShardRegion.ExtractEntityId = {
-    case c: Command => (c.applicationId.value.toString, c)
-  }
-
-  private val numberOfShards = 100
-
-  val extractShardId: ShardRegion.ExtractShardId = {
-    case c: Command => Math.abs(c.applicationId.value.hashCode() % numberOfShards).toString
-  }
+//  val extractEntityId: ShardRegion.ExtractEntityId = {
+//    case c: Command => (c.applicationId.value.toString, c)
+//  }
+//
+//  private val numberOfShards = 100
+//
+//  val extractShardId: ShardRegion.ExtractShardId = {
+//    case c: Command => Math.abs(c.applicationId.value.hashCode() % numberOfShards).toString
+//  }
 }

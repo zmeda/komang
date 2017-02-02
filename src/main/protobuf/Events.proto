@@ -23,3 +23,29 @@ message ProfileUpdatedEvent {
     string profile_id = 2;
     string name = 3;
 }
+
+message ConfigCreatedEvent {
+    string profile_id = 1;
+    string config_id = 2;
+    string name = 3;
+    string type = 4;
+    string value = 5;
+}
+
+message ConfigNameUpdatedEvent {
+    string profile_id = 1;
+    string config_id = 2;
+    string name = 3;
+}
+
+message ConfigTypeUpdatedEvent {
+    string profile_id = 1;
+    string config_id = 2;
+    string type = 3;
+}
+
+message ConfigValueUpdatedEvent {
+    string profile_id = 1;
+    string config_id = 2;
+    string value = 3;
+}

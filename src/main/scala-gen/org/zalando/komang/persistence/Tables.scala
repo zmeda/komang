@@ -13,6 +13,7 @@ trait Tables {
   import java.util.UUID
   import org.zalando.komang.model.Model.ApplicationId
   import org.zalando.komang.model.Model.ProfileId
+  import org.zalando.komang.model.Model.ConfigId
 
   /** Implicit for mapping ApplicationId to String and reverse */
   implicit val applicationIdColumnType = MappedColumnType.base[ApplicationId, String](
@@ -32,12 +33,21 @@ trait Tables {
     }
   )
 
+  /** Implicit for mapping ConfigId to String and reverse */
+  implicit val configIdColumnType = MappedColumnType.base[ConfigId, String](
+    { cId =>
+      cId.value.toString
+    }, { str =>
+      ConfigId(UUID.fromString(str))
+    }
+  )
+
   import slick.model.ForeignKeyAction
   // NOTE: GetResult mappers for plain SQL are only generated for tables where Slick knows how to map the types of all columns.
   import slick.jdbc.{GetResult => GR}
 
   /** DDL for all tables. Call .create to execute. */
-  lazy val schema: profile.SchemaDescription = Application.schema ++ Profile.schema ++ SchemaVersion.schema
+  lazy val schema: profile.SchemaDescription = Application.schema ++ Config.schema ++ Profile.schema ++ SchemaVersion.schema
   @deprecated("Use .schema instead of .ddl", "3.0")
   def ddl = schema
 
@@ -72,6 +82,57 @@ trait Tables {
 
   /** Collection-like TableQuery object for table Application */
   lazy val Application = new TableQuery(tag => new Application(tag))
+
+  /** Entity class storing rows of table Config
+    *  @param configId Database column config_id SqlType(VARCHAR), PrimaryKey
+    *  @param profileId Database column profile_id SqlType(VARCHAR)
+    *  @param name Database column name SqlType(VARCHAR)
+    *  @param `type` Database column type SqlType(VARCHAR)
+    *  @param value Database column value SqlType(VARCHAR) */
+  case class ConfigRow(configId: ConfigId, profileId: ProfileId, name: String, `type`: String, value: String)
+
+  /** GetResult implicit for fetching ConfigRow objects using plain SQL queries */
+  implicit def GetResultConfigRow(implicit e0: GR[ConfigId], e1: GR[ProfileId], e2: GR[String]): GR[ConfigRow] = GR {
+    prs =>
+      import prs._
+      ConfigRow.tupled((<<[ConfigId], <<[ProfileId], <<[String], <<[String], <<[String]))
+  }
+
+  /** Table description of table config. Objects of this class serve as prototypes for rows in queries.
+    *  NOTE: The following names collided with Scala keywords and were escaped: type */
+  class Config(_tableTag: Tag) extends Table[ConfigRow](_tableTag, "config") {
+    def * = (configId, profileId, name, `type`, value) <> (ConfigRow.tupled, ConfigRow.unapply)
+
+    /** Maps whole row to an option. Useful for outer joins. */
+    def ? =
+      (Rep.Some(configId), Rep.Some(profileId), Rep.Some(name), Rep.Some(`type`), Rep.Some(value)).shaped.<>({ r =>
+        import r._; _1.map(_ => ConfigRow.tupled((_1.get, _2.get, _3.get, _4.get, _5.get)))
+      }, (_: Any) => throw new Exception("Inserting into ? projection not supported."))
+
+    /** Database column config_id SqlType(VARCHAR), PrimaryKey */
+    val configId: Rep[ConfigId] = column[ConfigId]("config_id", O.PrimaryKey)
+
+    /** Database column profile_id SqlType(VARCHAR) */
+    val profileId: Rep[ProfileId] = column[ProfileId]("profile_id")
+
+    /** Database column name SqlType(VARCHAR) */
+    val name: Rep[String] = column[String]("name")
+
+    /** Database column type SqlType(VARCHAR)
+      *  NOTE: The name was escaped because it collided with a Scala keyword. */
+    val `type`: Rep[String] = column[String]("type")
+
+    /** Database column value SqlType(VARCHAR) */
+    val value: Rep[String] = column[String]("value")
+
+    /** Foreign key referencing Profile (database name CONSTRAINT_AF) */
+    lazy val profileFk = foreignKey("CONSTRAINT_AF", profileId, Profile)(r => r.profileId,
+                                                                         onUpdate = ForeignKeyAction.Restrict,
+                                                                         onDelete = ForeignKeyAction.Restrict)
+  }
+
+  /** Collection-like TableQuery object for table Config */
+  lazy val Config = new TableQuery(tag => new Config(tag))
 
   /** Entity class storing rows of table Profile
     *  @param profileId Database column profile_id SqlType(VARCHAR), PrimaryKey

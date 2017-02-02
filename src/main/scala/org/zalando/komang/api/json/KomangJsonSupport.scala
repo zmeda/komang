@@ -145,6 +145,76 @@ trait KomangJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
       }
   }
 
+  implicit object ConfigFormat extends RootJsonFormat[Config] {
+    override def write(config: Config): JsValue = {
+      val profileId = Some("config_id" -> config.configId.toJson)
+      val name = Some("name" -> config.name.toJson)
+      val `type` = Some("type" -> config.`type`.toJson)
+      val value = Some("value" -> config.value.toJson)
+      JsObject(collectSome(profileId, name, `type`, value) toMap)
+    }
+
+    override def read(json: JsValue): Config = {
+      val obj = json.asJsObject
+      val configId = (obj \ "config_id").convertTo[ConfigId]
+      val name = (obj \ "name").convertTo[ConfigName]
+      val `type` = (obj \ "type").convertTo[ConfigType]
+      val value = (obj \ "value").convertTo[ConfigValue]
+      Config(configId, name, `type`, value)
+    }
+  }
+
+  implicit object ConfigIdFormat extends JsonFormat[ConfigId] {
+    override def write(configId: ConfigId): JsValue =
+      JsString(configId.value.toString)
+
+    override def read(json: JsValue): ConfigId =
+      json match {
+        case JsString(str) =>
+          parseUuidString(str) match {
+            case None => deserializationError(s"Expected UUID but got $str")
+            case Some(uuid) => ConfigId(uuid)
+          }
+        case x => deserializationError(s"Expected type String but got $x")
+      }
+  }
+
+  implicit object ConfigNameFormat extends JsonFormat[ConfigName] {
+    override def write(configName: ConfigName): JsValue =
+      JsString(configName.value.toString)
+
+    override def read(json: JsValue): ConfigName =
+      json match {
+        case JsString(str) =>
+          ConfigName(str)
+        case x => deserializationError(s"Expected type String but got $x")
+      }
+  }
+
+  implicit object ConfigTypeFormat extends JsonFormat[ConfigType] {
+    override def write(configType: ConfigType): JsValue =
+      JsString(configType.value.toString)
+
+    override def read(json: JsValue): ConfigType =
+      json match {
+        case JsString(str) =>
+          ConfigType(str)
+        case x => deserializationError(s"Expected type String but got $x")
+      }
+  }
+
+  implicit object ConfigValueFormat extends JsonFormat[ConfigValue] {
+    override def write(configValue: ConfigValue): JsValue =
+      JsString(configValue.value.toString)
+
+    override def read(json: JsValue): ConfigValue =
+      json match {
+        case JsString(str) =>
+          ConfigValue(str)
+        case x => deserializationError(s"Expected type String but got $x")
+      }
+  }
+
   private def parseUuidString(token: String): Option[UUID] = {
     if (token.length != 36) None
     else

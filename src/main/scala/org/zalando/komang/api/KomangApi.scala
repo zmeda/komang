@@ -41,6 +41,22 @@ trait KomangApi extends KomangController {
               patch {
                 updateProfile(applicationId, profileId)
               }
+            } ~
+            pathPrefix("configs") {
+              pathEndOrSingleSlash {
+                get {
+                  getConfigs(applicationId, profileId)
+                }
+                post {}
+              } ~
+              pathPrefix(ConfigIdentity) { configId =>
+                pathEndOrSingleSlash {
+                  get {
+                    getConfig(applicationId, profileId, configId)
+                  }
+                  patch {}
+                }
+              }
             }
           }
         }

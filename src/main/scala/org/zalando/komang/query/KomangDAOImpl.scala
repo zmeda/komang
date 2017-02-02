@@ -1,7 +1,7 @@
 package org.zalando.komang.query
 
 import akka.Done
-import org.zalando.komang.model.Model.{Application, ApplicationId, Profile, ProfileId}
+import org.zalando.komang.model.Model.{Application, Config, Profile, ApplicationId, ProfileId, ConfigId}
 import slick.driver.H2Driver.api._
 import org.zalando.komang.persistence.Tables
 import org.zalando.komang.persistence.Tables._
@@ -41,12 +41,29 @@ class KomangDAOImpl extends KomangDAO {
   }
 
   override def createProfile(applicationId: ApplicationId, profile: Profile): Future[Done] = {
-    db.run(Tables.Profile += Tables.ProfileRow(profile.profileId, applicationId, profile.name.value)) map (_ => Done)
+    db.run(Tables.Profile += Tables.ProfileRow(profile.profileId, applicationId, profile.name.value)).map(_ => Done)
   }
 
   override def updateProfile(applicationId: ApplicationId, profile: Profile): Future[Done] = {
     val findProfile =
       Tables.Profile.filter(p => p.applicationId === applicationId && p.profileId === profile.profileId)
     db.run(findProfile.map(_.name).update(profile.name.value)).map(_ => Done)
+  }
+
+  override def getAllConfigs(profileId: ProfileId): Future[Seq[Tables.ConfigRow]] = {
+    db.run(Tables.Config.filter(_.profileId === profileId).result)
+  }
+
+  override def getConfig(profileId: ProfileId, configId: ConfigId): Future[Option[Tables.ConfigRow]] = {
+    db.run(Tables.Config.filter(c => c.profileId === profileId && c.configId === configId).result.headOption)
+  }
+
+  override def createConfig(profileId: ProfileId, config: Config): Future[Done] = {
+    db.run(Tables.Config += Tables.ConfigRow(config.configId, profileId, config.name.value, config.`type`.value, config.value.value)) map (_ => Done)
+  }
+
+  override def updateConfig(profileId: ProfileId, config: Config): Future[Done] = {
+    val findConfig = Tables.Config.filter(c => c.profileId === profileId && c.configId === config.configId)
+    db.run(findConfig.map(c => (c.`type`, c.value)).update((config.`type`.value, config.value.value))).map(_ => Done)
   }
 }

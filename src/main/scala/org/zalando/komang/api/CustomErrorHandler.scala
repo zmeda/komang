@@ -2,7 +2,7 @@ package org.zalando.komang.api
 
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.{Directives, ExceptionHandler, RejectionHandler}
-import org.zalando.komang.api.ApiModel.{ApplicationNotFoundException, ProfileNotFoundException}
+import org.zalando.komang.api.ApiModel.{ApplicationNotFoundException, ConfigNotFoundException, ProfileNotFoundException}
 
 import scala.util.control.NonFatal
 
@@ -11,15 +11,23 @@ trait CustomErrorHandler extends Directives {
     ExceptionHandler {
       case ApplicationNotFoundException(aId) =>
         extractLog { logger => ctx =>
-          logger.error(s"Application with id {} does not exist", aId.value.toString)
-          ctx.complete((NotFound, s"Application with id $aId not found"))
+          logger.error(s"An application with id {} does not exist", aId.value.toString)
+          ctx.complete((NotFound, s"An application with id $aId not found"))
         }
       case ProfileNotFoundException(aId, pId) =>
         extractLog { logger => ctx =>
-          logger.error(s"Profile with id {} does not exist for application with id {}",
+          logger.error(s"A profile with id {} does not exist for an application with id {}",
                        pId.value.toString,
                        aId.value.toString)
-          ctx.complete((NotFound, s"Profile with id $pId not found for application with id $aId"))
+          ctx.complete((NotFound, s"A profile with id $pId not found for an application with id $aId"))
+        }
+      case ConfigNotFoundException(aId, pId, cId) =>
+        extractLog { logger => ctx =>
+          logger.error(s"A config with id {} does not exist for an application with id {} and a profile with id {}",
+            cId.value.toString,
+            aId.value.toString,
+            pId.value.toString)
+          ctx.complete((NotFound, s"A config with id $cId not found for an application with id $aId and a profile with id $pId"))
         }
       case NonFatal(e) =>
         extractLog { logger => ctx =>

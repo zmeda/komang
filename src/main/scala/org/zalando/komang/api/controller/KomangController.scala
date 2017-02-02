@@ -6,7 +6,7 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.Directives._
 import org.zalando.komang.api.json.KomangJsonSupport
 import org.zalando.komang.api.ApiModel._
-import org.zalando.komang.model.Model.{ApplicationId, ProfileId}
+import org.zalando.komang.model.Model.{ApplicationId, ConfigId, ProfileId}
 import org.zalando.komang.service.KomangService
 
 import scala.concurrent.ExecutionContext
@@ -84,6 +84,41 @@ trait KomangController extends KomangJsonSupport {
   def updateProfile(applicationId: ApplicationId, profileId: ProfileId): Route = {
     entity(as[ProfileUpdate]) { profileUpdate =>
       complete(komangService.updateProfile(applicationId, profileId, profileUpdate))
+    }
+  }
+
+  def getConfigs(applicationId: ApplicationId, profileId: ProfileId): Route = {
+    complete(komangService.listConfigs(profileId))
+  }
+
+  def getConfig(applicationId: ApplicationId, profileId: ProfileId, configId: ConfigId): Route = {
+    complete {
+      komangService.findConfig(profileId, configId) map {
+        _.getOrElse(throw new ConfigNotFoundException(applicationId, profileId, configId))
+      }
+    }
+  }
+
+  def createConfig(applicationId: ApplicationId, profileId: ProfileId): Route = {
+    extractRequest { request =>
+      entity(as[ConfigDraft]) { configDraft =>
+        onComplete(komangService.createConfig(profileId, configDraft)) {
+          case Success(configId) => {
+            respondWithHeader(Location(s"${request.uri}/${configId.value}")) {
+              complete(
+                HttpResponse(status = StatusCodes.Created, entity = HttpEntity.empty(request.entity.contentType)))
+            }
+          }
+          case Failure(ex) =>
+            failWith(ex)
+        }
+      }
+    }
+  }
+
+  def updateConfig(applicationId: ApplicationId, profileId: ProfileId, configId: ConfigId): Route = {
+    entity(as[ConfigUpdate]) { configUpdate =>
+      complete(komangService.updateConfig(applicationId, profileId, profileUpdate))
     }
   }
 }

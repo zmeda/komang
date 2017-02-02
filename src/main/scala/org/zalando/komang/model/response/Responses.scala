@@ -11,3 +11,7 @@ case class UpdateApplicationResponse(application: Application) extends Response
 case class CreateProfileResponse(applicationId: ApplicationId, profileId: ProfileId) extends Response
 
 case class UpdateProfileResponse(profile: Profile) extends Response
+
+case class CreateConfigResponse(configId: ConfigId) extends Response
+
+case class UpdateConfigResponse(config: Config) extends Response

@@ -8,17 +8,17 @@ package org.zalando.komang.protobuf.Events
 
 
 @SerialVersionUID(0L)
-final case class ProfileUpdatedEvent(
-    applicationId: String = "",
+final case class ConfigNameUpdatedEvent(
     profileId: String = "",
+    configId: String = "",
     name: String = ""
-    ) extends com.trueaccord.scalapb.GeneratedMessage with com.trueaccord.scalapb.Message[ProfileUpdatedEvent] with com.trueaccord.lenses.Updatable[ProfileUpdatedEvent] {
+    ) extends com.trueaccord.scalapb.GeneratedMessage with com.trueaccord.scalapb.Message[ConfigNameUpdatedEvent] with com.trueaccord.lenses.Updatable[ConfigNameUpdatedEvent] {
     @transient
     private[this] var __serializedSizeCachedValue: Int = 0
     private[this] def __computeSerializedValue(): Int = {
       var __size = 0
-      if (applicationId != "") { __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(1, applicationId) }
-      if (profileId != "") { __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(2, profileId) }
+      if (profileId != "") { __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(1, profileId) }
+      if (configId != "") { __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(2, configId) }
       if (name != "") { __size += _root_.com.google.protobuf.CodedOutputStream.computeStringSize(3, name) }
       __size
     }
@@ -32,13 +32,13 @@ final case class ProfileUpdatedEvent(
     }
     def writeTo(`_output__`: _root_.com.google.protobuf.CodedOutputStream): Unit = {
       {
-        val __v = applicationId
+        val __v = profileId
         if (__v != "") {
           _output__.writeString(1, __v)
         }
       };
       {
-        val __v = profileId
+        val __v = configId
         if (__v != "") {
           _output__.writeString(2, __v)
         }
@@ -50,9 +50,9 @@ final case class ProfileUpdatedEvent(
         }
       };
     }
-    def mergeFrom(`_input__`: _root_.com.google.protobuf.CodedInputStream): org.zalando.komang.protobuf.Events.ProfileUpdatedEvent = {
-      var __applicationId = this.applicationId
+    def mergeFrom(`_input__`: _root_.com.google.protobuf.CodedInputStream): org.zalando.komang.protobuf.Events.ConfigNameUpdatedEvent = {
       var __profileId = this.profileId
+      var __configId = this.configId
       var __name = this.name
       var _done__ = false
       while (!_done__) {
@@ -60,31 +60,31 @@ final case class ProfileUpdatedEvent(
         _tag__ match {
           case 0 => _done__ = true
           case 10 =>
-            __applicationId = _input__.readString()
-          case 18 =>
             __profileId = _input__.readString()
+          case 18 =>
+            __configId = _input__.readString()
           case 26 =>
             __name = _input__.readString()
           case tag => _input__.skipField(tag)
         }
       }
-      org.zalando.komang.protobuf.Events.ProfileUpdatedEvent(
-          applicationId = __applicationId,
+      org.zalando.komang.protobuf.Events.ConfigNameUpdatedEvent(
           profileId = __profileId,
+          configId = __configId,
           name = __name
       )
     }
-    def withApplicationId(__v: String): ProfileUpdatedEvent = copy(applicationId = __v)
-    def withProfileId(__v: String): ProfileUpdatedEvent = copy(profileId = __v)
-    def withName(__v: String): ProfileUpdatedEvent = copy(name = __v)
+    def withProfileId(__v: String): ConfigNameUpdatedEvent = copy(profileId = __v)
+    def withConfigId(__v: String): ConfigNameUpdatedEvent = copy(configId = __v)
+    def withName(__v: String): ConfigNameUpdatedEvent = copy(name = __v)
     def getField(__field: _root_.com.google.protobuf.Descriptors.FieldDescriptor): scala.Any = {
       __field.getNumber match {
         case 1 => {
-          val __t = applicationId
+          val __t = profileId
           if (__t != "") __t else null
         }
         case 2 => {
-          val __t = profileId
+          val __t = configId
           if (__t != "") __t else null
         }
         case 3 => {
@@ -94,31 +94,31 @@ final case class ProfileUpdatedEvent(
       }
     }
     override def toString: String = _root_.com.trueaccord.scalapb.TextFormat.printToUnicodeString(this)
-    def companion = org.zalando.komang.protobuf.Events.ProfileUpdatedEvent
+    def companion = org.zalando.komang.protobuf.Events.ConfigNameUpdatedEvent
 }
 
-object ProfileUpdatedEvent extends com.trueaccord.scalapb.GeneratedMessageCompanion[org.zalando.komang.protobuf.Events.ProfileUpdatedEvent] {
-  implicit def messageCompanion: com.trueaccord.scalapb.GeneratedMessageCompanion[org.zalando.komang.protobuf.Events.ProfileUpdatedEvent] = this
-  def fromFieldsMap(__fieldsMap: scala.collection.immutable.Map[_root_.com.google.protobuf.Descriptors.FieldDescriptor, scala.Any]): org.zalando.komang.protobuf.Events.ProfileUpdatedEvent = {
+object ConfigNameUpdatedEvent extends com.trueaccord.scalapb.GeneratedMessageCompanion[org.zalando.komang.protobuf.Events.ConfigNameUpdatedEvent] {
+  implicit def messageCompanion: com.trueaccord.scalapb.GeneratedMessageCompanion[org.zalando.komang.protobuf.Events.ConfigNameUpdatedEvent] = this
+  def fromFieldsMap(__fieldsMap: scala.collection.immutable.Map[_root_.com.google.protobuf.Descriptors.FieldDescriptor, scala.Any]): org.zalando.komang.protobuf.Events.ConfigNameUpdatedEvent = {
     require(__fieldsMap.keys.forall(_.getContainingType() == javaDescriptor), "FieldDescriptor does not match message type.")
     val __fields = javaDescriptor.getFields
-    org.zalando.komang.protobuf.Events.ProfileUpdatedEvent(
+    org.zalando.komang.protobuf.Events.ConfigNameUpdatedEvent(
       __fieldsMap.getOrElse(__fields.get(0), "").asInstanceOf[String],
       __fieldsMap.getOrElse(__fields.get(1), "").asInstanceOf[String],
       __fieldsMap.getOrElse(__fields.get(2), "").asInstanceOf[String]
     )
   }
-  def javaDescriptor: _root_.com.google.protobuf.Descriptors.Descriptor = EventsProto.javaDescriptor.getMessageTypes.get(3)
+  def javaDescriptor: _root_.com.google.protobuf.Descriptors.Descriptor = EventsProto.javaDescriptor.getMessageTypes.get(5)
   def messageCompanionForField(__field: _root_.com.google.protobuf.Descriptors.FieldDescriptor): _root_.com.trueaccord.scalapb.GeneratedMessageCompanion[_] = throw new MatchError(__field)
   def enumCompanionForField(__field: _root_.com.google.protobuf.Descriptors.FieldDescriptor): _root_.com.trueaccord.scalapb.GeneratedEnumCompanion[_] = throw new MatchError(__field)
-  lazy val defaultInstance = org.zalando.komang.protobuf.Events.ProfileUpdatedEvent(
+  lazy val defaultInstance = org.zalando.komang.protobuf.Events.ConfigNameUpdatedEvent(
   )
-  implicit class ProfileUpdatedEventLens[UpperPB](_l: _root_.com.trueaccord.lenses.Lens[UpperPB, org.zalando.komang.protobuf.Events.ProfileUpdatedEvent]) extends _root_.com.trueaccord.lenses.ObjectLens[UpperPB, org.zalando.komang.protobuf.Events.ProfileUpdatedEvent](_l) {
-    def applicationId: _root_.com.trueaccord.lenses.Lens[UpperPB, String] = field(_.applicationId)((c_, f_) => c_.copy(applicationId = f_))
+  implicit class ConfigNameUpdatedEventLens[UpperPB](_l: _root_.com.trueaccord.lenses.Lens[UpperPB, org.zalando.komang.protobuf.Events.ConfigNameUpdatedEvent]) extends _root_.com.trueaccord.lenses.ObjectLens[UpperPB, org.zalando.komang.protobuf.Events.ConfigNameUpdatedEvent](_l) {
     def profileId: _root_.com.trueaccord.lenses.Lens[UpperPB, String] = field(_.profileId)((c_, f_) => c_.copy(profileId = f_))
+    def configId: _root_.com.trueaccord.lenses.Lens[UpperPB, String] = field(_.configId)((c_, f_) => c_.copy(configId = f_))
     def name: _root_.com.trueaccord.lenses.Lens[UpperPB, String] = field(_.name)((c_, f_) => c_.copy(name = f_))
   }
-  final val APPLICATION_ID_FIELD_NUMBER = 1
-  final val PROFILE_ID_FIELD_NUMBER = 2
+  final val PROFILE_ID_FIELD_NUMBER = 1
+  final val CONFIG_ID_FIELD_NUMBER = 2
   final val NAME_FIELD_NUMBER = 3
 }

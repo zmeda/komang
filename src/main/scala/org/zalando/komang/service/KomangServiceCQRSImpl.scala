@@ -75,9 +75,8 @@ class KomangServiceCQRSImpl(komangDAO: KomangDAO)(implicit val actorSystem: Acto
 
   override def createProfile(applicationId: ApplicationId,
                              profileDraft: ProfileDraft): Future[(ApplicationId, ProfileId)] = {
-    val profileIdUUID = UUID.randomUUID
     getPersistentActor(applicationId.value) ? CreateProfileCommand(applicationId,
-                                                                   ProfileId(profileIdUUID),
+                                                                   ProfileId(UUID.randomUUID),
                                                                    profileDraft.name) map {
       case response: CreateProfileResponse => (response.applicationId, response.profileId)
     }
@@ -89,5 +88,27 @@ class KomangServiceCQRSImpl(komangDAO: KomangDAO)(implicit val actorSystem: Acto
     getPersistentActor(applicationId.value) ? UpdateProfileCommand(applicationId, profileId, profileUpdate.name) map {
       case response: UpdateProfileResponse => response.profile
     }
+  }
+
+  override def listConfigs(profileId: ProfileId): Future[Vector[Config]] = {
+    komangDAO.getAllConfigs(profileId).map(_.map {
+      case configRow => Config(configRow.configId, ConfigName(configRow.name), ConfigType(configRow.`type`), ConfigValue(configRow.value))
+    }.toVector)
+  }
+
+  override def findConfig(profileId: ProfileId, configId: ConfigId): Future[Option[Config]] = {
+    komangDAO.getConfig(profileId, configId).map(_.map {
+      case configRow => Config(configRow.configId, ConfigName(configRow.name), ConfigType(configRow.`type`), ConfigValue(configRow.value))
+    })
+  }
+
+  override def createConfig(applicationId: ApplicationId, profileId: ProfileId, configDraft: ConfigDraft): Future[ConfigId] = {
+    getPersistentActor(applicationId.value) ? CreateConfigCommand(profileId, ConfigId(UUID.randomUUID), configDraft.name, configDraft.`type`, configDraft.value) map {
+      case response: CreateConfigResponse => response.configId
+    }
+  }
+
+  override def updateConfig(applicationId: ApplicationId, profileId: ProfileId, configUpdate: ConfigUpdate): Future[Config] = {
+    ???
   }
 }
