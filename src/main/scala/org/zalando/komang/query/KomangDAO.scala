@@ -29,5 +29,9 @@ trait KomangDAO {
 
   def createConfig(profileId: ProfileId, config: Config): Future[Done]
 
-  def updateConfig(profileId: ProfileId, config: Config): Future[Done]
+  def updateConfigName(profileId: ProfileId, configId: ConfigId, name: ConfigName): Future[Done]
+
+  def updateConfigType(profileId: ProfileId, configId: ConfigId, `type`: ConfigType): Future[Done]
+
+  def updateConfigValue(profileId: ProfileId, configId: ConfigId, value: ConfigValue): Future[Done]
 }

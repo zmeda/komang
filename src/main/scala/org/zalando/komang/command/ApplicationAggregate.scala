@@ -6,7 +6,7 @@ import akka.persistence.PersistentActor
 import org.zalando.komang.model.command._
 import org.zalando.komang.model.event._
 import org.zalando.komang.model.response._
-import org.zalando.komang.model.Model.{Application, Profile}
+import org.zalando.komang.model.Model.{Application, Config, Profile}
 
 class ApplicationAggregate extends PersistentActor with ActorLogging {
   val name = context.self.path.name
@@ -47,8 +47,21 @@ class ApplicationAggregate extends PersistentActor with ActorLogging {
         sender() ! CreateConfigResponse(evt.configId)
       }
     case ucc: UpdateConfigCommand =>
-      // TODO multiple events
-      ???
+      val events = List(
+        ucc.name.map(n => ConfigNameUpdatedEvent(ucc.profileId, ucc.configId, n)),
+        ucc.`type`.map(t => ConfigTypeUpdatedEvent(ucc.profileId, ucc.configId, t)),
+        ucc.value.map(v => ConfigValueUpdatedEvent(ucc.profileId, ucc.configId, v))
+      ).collect {
+        case Some(evt) => evt
+      }
+      persistAll(events) { evt =>
+        updateState(evt)
+        evt match {
+          case ConfigValueUpdatedEvent(profileId, configId, _) =>
+            val config = applicationState.profiles.find(_.profileId == profileId).get.configs.find(_.configId == configId).get
+            sender() ! UpdateConfigResponse(config)
+        }
+      }
   }
 
   def updateState(event: Event): Unit =
@@ -58,13 +71,23 @@ class ApplicationAggregate extends PersistentActor with ActorLogging {
       case ApplicationUpdatedEvent(applicationId, name) =>
         applicationState = Application(applicationId, name)
       case ProfileCreatedEvent(_, profileId, name) =>
-        applicationState = applicationState.copy(profiles = Profile(profileId, name) :: applicationState.profiles)
+        applicationState = applicationState.copy(profiles = applicationState.profiles :+ Profile(profileId, name))
       case ProfileUpdatedEvent(_, profileId, name) =>
-        applicationState = applicationState.copy(profiles = applicationState.profiles map {
+        applicationState = applicationState.copy(profiles = applicationState.profiles.map {
           case Profile(`profileId`, _, configs) => Profile(profileId, name, configs)
           case profile => profile
         })
-        // TODO other events
+      case ConfigCreatedEvent(profileId, configId, name, cType, value) =>
+        applicationState = applicationState.copy(profiles = applicationState.profiles.map {
+          case Profile(`profileId`, pName, configs) => Profile(profileId, pName, configs :+ Config(configId, name, cType, value))
+          case profile => profile
+        })
+      case ConfigNameUpdatedEvent(profileId, configId, name) =>
+        applicationState = applicationState.copy(profiles = applicationState.profiles.map {
+          case Profile(`profileId`, pName, configs) => Profile(profileId, pName, configs :+ Config(configId, name, cType, value))
+          case profile => profile
+        })
+        // TODO add other events impl
     }
 }
 

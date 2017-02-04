@@ -13,7 +13,7 @@ import com.typesafe.scalalogging.LazyLogging
 import org.flywaydb.core.Flyway
 import org.zalando.komang.api.Api
 import org.zalando.komang.command._
-import org.zalando.komang.model.Model.{Application, Profile}
+import org.zalando.komang.model.Model.{Application, Config, Profile}
 import org.zalando.komang.model.event._
 import org.zalando.komang.query.{ConfigSupport, KomangDAOImpl}
 import org.zalando.komang.service.{KomangService, KomangServiceCQRSImpl}
@@ -61,10 +61,21 @@ trait Core extends Api with ConfigSupport with LazyLogging {
           case pc: ProfileCreatedEvent =>
             logger.info(s"profileCreated: $pc")
             komangDAO.createProfile(pc.applicationId, Profile(pc.profileId, pc.name))
-          case up: ProfileUpdatedEvent =>
-            logger.info(s"profileUpdated: $up")
-            komangDAO.updateProfile(up.applicationId, Profile(up.profileId, up.name))
-            // TODO other events
+          case pu: ProfileUpdatedEvent =>
+            logger.info(s"profileUpdated: $pu")
+            komangDAO.updateProfile(pu.applicationId, Profile(pu.profileId, pu.name))
+          case cc: ConfigCreatedEvent =>
+            logger.info(s"configCreated: $cc")
+            komangDAO.createConfig(cc.profileId, Config(cc.configId, cc.name, cc.`type`, cc.value))
+          case cnu: ConfigNameUpdatedEvent =>
+            logger.info(s"configNameUpdated: $cnu")
+            komangDAO.updateConfigName(cnu.profileId, cnu.configId, cnu.name)
+          case ctu: ConfigTypeUpdatedEvent =>
+            logger.info(s"configTypeUpdated: $ctu")
+            komangDAO.updateConfigType(ctu.profileId, ctu.configId, ctu.`type`)
+          case cvu: ConfigValueUpdatedEvent =>
+            logger.info(s"configValueUpdated: $cvu")
+            komangDAO.updateConfigValue(cvu.profileId, cvu.configId, cvu.value)
         }
       case a =>
         logger.info(s"We received something else from journal: $a")
@@ -88,13 +99,13 @@ trait Core extends Api with ConfigSupport with LazyLogging {
   Http().bindAndHandle(route, "0.0.0.0", 8080)
 }
 
-trait Sharding { this: Core =>
-
-  val orderShardRegion: ActorRef = ClusterSharding(actorSystem).start(
-    typeName = "application",
-    entityProps = ApplicationAggregate.props,
-    settings = ClusterShardingSettings(actorSystem).withStateStoreMode("ddata"),
-    extractEntityId = ApplicationAggregate.extractEntityId,
-    extractShardId = ApplicationAggregate.extractShardId
-  )
-}
+//trait Sharding { this: Core =>
+//
+//  val orderShardRegion: ActorRef = ClusterSharding(actorSystem).start(
+//    typeName = "application",
+//    entityProps = ApplicationAggregate.props,
+//    settings = ClusterShardingSettings(actorSystem).withStateStoreMode("ddata"),
+//    extractEntityId = ApplicationAggregate.extractEntityId,
+//    extractShardId = ApplicationAggregate.extractShardId
+//  )
+//}

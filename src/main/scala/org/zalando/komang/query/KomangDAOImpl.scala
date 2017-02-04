@@ -1,7 +1,7 @@
 package org.zalando.komang.query
 
 import akka.Done
-import org.zalando.komang.model.Model.{Application, Config, Profile, ApplicationId, ProfileId, ConfigId}
+import org.zalando.komang.model.Model.{Application, Config, Profile, ApplicationId, ProfileId, ConfigId, ConfigName, ConfigType, ConfigValue}
 import slick.driver.H2Driver.api._
 import org.zalando.komang.persistence.Tables
 import org.zalando.komang.persistence.Tables._
@@ -62,8 +62,18 @@ class KomangDAOImpl extends KomangDAO {
     db.run(Tables.Config += Tables.ConfigRow(config.configId, profileId, config.name.value, config.`type`.value, config.value.value)) map (_ => Done)
   }
 
-  override def updateConfig(profileId: ProfileId, config: Config): Future[Done] = {
-    val findConfig = Tables.Config.filter(c => c.profileId === profileId && c.configId === config.configId)
-    db.run(findConfig.map(c => (c.`type`, c.value)).update((config.`type`.value, config.value.value))).map(_ => Done)
+  override def updateConfigName(profileId: ProfileId, configId: ConfigId, name: ConfigName): Future[Done] = {
+    val findConfig = Tables.Config.filter(c => c.profileId === profileId && c.configId === configId)
+    db.run(findConfig.map(_.name).update(name.value)).map(_ => Done)
+  }
+
+  override def updateConfigType(profileId: ProfileId, configId: ConfigId, `type`: ConfigType): Future[Done] = {
+    val findConfig = Tables.Config.filter(c => c.profileId === profileId && c.configId === configId)
+    db.run(findConfig.map(_.`type`).update(`type`.value)).map(_ => Done)
+  }
+
+  override def updateConfigValue(profileId: ProfileId, configId: ConfigId, value: ConfigValue): Future[Done] = {
+    val findConfig = Tables.Config.filter(c => c.profileId === profileId && c.configId === configId)
+    db.run(findConfig.map(_.value).update(value.value)).map(_ => Done)
   }
 }
