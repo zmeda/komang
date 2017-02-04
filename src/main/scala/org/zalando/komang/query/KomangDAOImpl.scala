@@ -1,7 +1,17 @@
 package org.zalando.komang.query
 
 import akka.Done
-import org.zalando.komang.model.Model.{Application, Config, Profile, ApplicationId, ProfileId, ConfigId, ConfigName, ConfigType, ConfigValue}
+import org.zalando.komang.model.Model.{
+  Application,
+  Config,
+  Profile,
+  ApplicationId,
+  ProfileId,
+  ConfigId,
+  ConfigName,
+  ConfigType,
+  ConfigValue
+}
 import slick.driver.H2Driver.api._
 import org.zalando.komang.persistence.Tables
 import org.zalando.komang.persistence.Tables._
@@ -59,7 +69,9 @@ class KomangDAOImpl extends KomangDAO {
   }
 
   override def createConfig(profileId: ProfileId, config: Config): Future[Done] = {
-    db.run(Tables.Config += Tables.ConfigRow(config.configId, profileId, config.name.value, config.`type`.value, config.value.value)) map (_ => Done)
+    db.run(Tables.Config += Tables
+      .ConfigRow(config.configId, profileId, config.name.value, config.`type`.value, config.value.value)) map (_ =>
+                                                                                                                 Done)
   }
 
   override def updateConfigName(profileId: ProfileId, configId: ConfigId, name: ConfigName): Future[Done] = {

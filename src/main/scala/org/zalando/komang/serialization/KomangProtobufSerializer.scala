@@ -40,7 +40,11 @@ class KomangProtobufSerializer extends SerializerWithStringManifest {
         .toByteArray
     case cce: ConfigCreatedEvent =>
       protobuf.Events
-        .ConfigCreatedEvent(cce.profileId.value.toString, cce.configId.value.toString, cce.name.value, cce.`type`.value, cce.value.value)
+        .ConfigCreatedEvent(cce.profileId.value.toString,
+                            cce.configId.value.toString,
+                            cce.name.value,
+                            cce.`type`.value,
+                            cce.value.value)
         .toByteArray
     case cnue: ConfigNameUpdatedEvent =>
       protobuf.Events
@@ -79,16 +83,26 @@ class KomangProtobufSerializer extends SerializerWithStringManifest {
                           ProfileName(evt.name))
     case ConfigCreatedEventManifest =>
       val evt = protobuf.Events.ConfigCreatedEvent.parseFrom(bytes)
-      ConfigCreatedEvent(ProfileId(UUID.fromString(evt.profileId)), ConfigId(UUID.fromString(evt.configId)), ConfigName(evt.name), ConfigType(evt.`type`), ConfigValue(evt.value))
+      ConfigCreatedEvent(ProfileId(UUID.fromString(evt.profileId)),
+                         ConfigId(UUID.fromString(evt.configId)),
+                         ConfigName(evt.name),
+                         ConfigType(evt.`type`),
+                         ConfigValue(evt.value))
     case ConfigNameUpdatedEventManifest =>
       val evt = protobuf.Events.ConfigNameUpdatedEvent.parseFrom(bytes)
-      ConfigNameUpdatedEvent(ProfileId(UUID.fromString(evt.profileId)), ConfigId(UUID.fromString(evt.configId)), ConfigName(evt.name))
+      ConfigNameUpdatedEvent(ProfileId(UUID.fromString(evt.profileId)),
+                             ConfigId(UUID.fromString(evt.configId)),
+                             ConfigName(evt.name))
     case ConfigTypeUpdatedEventManifest =>
       val evt = protobuf.Events.ConfigTypeUpdatedEvent.parseFrom(bytes)
-      ConfigTypeUpdatedEvent(ProfileId(UUID.fromString(evt.profileId)), ConfigId(UUID.fromString(evt.configId)), ConfigType(evt.`type`))
+      ConfigTypeUpdatedEvent(ProfileId(UUID.fromString(evt.profileId)),
+                             ConfigId(UUID.fromString(evt.configId)),
+                             ConfigType(evt.`type`))
     case ConfigValueUpdatedEventManifest =>
       val evt = protobuf.Events.ConfigValueUpdatedEvent.parseFrom(bytes)
-      ConfigValueUpdatedEvent(ProfileId(UUID.fromString(evt.profileId)), ConfigId(UUID.fromString(evt.configId)), ConfigValue(evt.value))
+      ConfigValueUpdatedEvent(ProfileId(UUID.fromString(evt.profileId)),
+                              ConfigId(UUID.fromString(evt.configId)),
+                              ConfigValue(evt.value))
     case _ =>
       throw new IllegalArgumentException(
         s"""can't deserialize message with manifest "${manifest}" in ${getClass.getName}"""

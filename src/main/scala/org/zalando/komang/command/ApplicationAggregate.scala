@@ -58,8 +58,10 @@ class ApplicationAggregate extends PersistentActor with ActorLogging {
         updateState(evt)
         evt match {
           case ConfigValueUpdatedEvent(profileId, configId, _) =>
-            val config = applicationState.profiles.find(_.profileId == profileId).get.configs.find(_.configId == configId).get
+            val config =
+              applicationState.profiles.find(_.profileId == profileId).get.configs.find(_.configId == configId).get
             sender() ! UpdateConfigResponse(config)
+          case _ => // ignore
         }
       }
   }
@@ -79,28 +81,50 @@ class ApplicationAggregate extends PersistentActor with ActorLogging {
         })
       case ConfigCreatedEvent(profileId, configId, name, cType, value) =>
         applicationState = applicationState.copy(profiles = applicationState.profiles.map {
-          case Profile(`profileId`, pName, configs) => Profile(profileId, pName, configs :+ Config(configId, name, cType, value))
+          case Profile(`profileId`, pName, configs) =>
+            Profile(profileId, pName, configs :+ Config(configId, name, cType, value))
           case profile => profile
         })
       case ConfigNameUpdatedEvent(profileId, configId, name) =>
         applicationState = applicationState.copy(profiles = applicationState.profiles.map {
-          case Profile(`profileId`, pName, configs) => Profile(profileId, pName, configs :+ Config(configId, name, cType, value))
+          case Profile(`profileId`, pName, configs) =>
+            Profile(profileId, pName, configs.map {
+              case Config(`configId`, _, cType, value) => Config(configId, name, cType, value)
+              case config => config
+            })
           case profile => profile
         })
-        // TODO add other events impl
+      case ConfigTypeUpdatedEvent(profileId, configId, cType) =>
+        applicationState = applicationState.copy(profiles = applicationState.profiles.map {
+          case Profile(`profileId`, pName, configs) =>
+            Profile(profileId, pName, configs.map {
+              case Config(`configId`, name, _, value) => Config(configId, name, cType, value)
+              case config => config
+            })
+          case profile => profile
+        })
+      case ConfigValueUpdatedEvent(profileId, configId, value) =>
+        applicationState = applicationState.copy(profiles = applicationState.profiles.map {
+          case Profile(`profileId`, pName, configs) =>
+            Profile(profileId, pName, configs.map {
+              case Config(`configId`, name, cType, _) => Config(configId, name, cType, value)
+              case config => config
+            })
+          case profile => profile
+        })
     }
 }
 
 object ApplicationAggregate {
   def props = Props(classOf[ApplicationAggregate])
 
-//  val extractEntityId: ShardRegion.ExtractEntityId = {
-//    case c: Command => (c.applicationId.value.toString, c)
-//  }
-//
-//  private val numberOfShards = 100
-//
-//  val extractShardId: ShardRegion.ExtractShardId = {
-//    case c: Command => Math.abs(c.applicationId.value.hashCode() % numberOfShards).toString
-//  }
+  val extractEntityId: ShardRegion.ExtractEntityId = {
+    case c: Command => (c.applicationId.value.toString, c)
+  }
+
+  private val numberOfShards = 100
+
+  val extractShardId: ShardRegion.ExtractShardId = {
+    case c: Command => Math.abs(c.applicationId.value.hashCode() % numberOfShards).toString
+  }
 }

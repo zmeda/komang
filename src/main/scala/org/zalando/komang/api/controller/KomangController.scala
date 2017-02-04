@@ -102,7 +102,7 @@ trait KomangController extends KomangJsonSupport {
   def createConfig(applicationId: ApplicationId, profileId: ProfileId): Route = {
     extractRequest { request =>
       entity(as[ConfigDraft]) { configDraft =>
-        onComplete(komangService.createConfig(profileId, configDraft)) {
+        onComplete(komangService.createConfig(applicationId, profileId, configDraft)) {
           case Success(configId) => {
             respondWithHeader(Location(s"${request.uri}/${configId.value}")) {
               complete(
@@ -118,7 +118,7 @@ trait KomangController extends KomangJsonSupport {
 
   def updateConfig(applicationId: ApplicationId, profileId: ProfileId, configId: ConfigId): Route = {
     entity(as[ConfigUpdate]) { configUpdate =>
-      complete(komangService.updateConfig(applicationId, profileId, profileUpdate))
+      complete(komangService.updateConfig(applicationId, profileId, configUpdate))
     }
   }
 }

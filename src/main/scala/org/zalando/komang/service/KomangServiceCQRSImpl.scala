@@ -91,24 +91,45 @@ class KomangServiceCQRSImpl(komangDAO: KomangDAO)(implicit val actorSystem: Acto
   }
 
   override def listConfigs(profileId: ProfileId): Future[Vector[Config]] = {
-    komangDAO.getAllConfigs(profileId).map(_.map {
-      case configRow => Config(configRow.configId, ConfigName(configRow.name), ConfigType(configRow.`type`), ConfigValue(configRow.value))
-    }.toVector)
+    komangDAO
+      .getAllConfigs(profileId)
+      .map(_.map {
+        case configRow =>
+          Config(configRow.configId,
+                 ConfigName(configRow.name),
+                 ConfigType(configRow.`type`),
+                 ConfigValue(configRow.value))
+      }.toVector)
   }
 
   override def findConfig(profileId: ProfileId, configId: ConfigId): Future[Option[Config]] = {
-    komangDAO.getConfig(profileId, configId).map(_.map {
-      case configRow => Config(configRow.configId, ConfigName(configRow.name), ConfigType(configRow.`type`), ConfigValue(configRow.value))
-    })
+    komangDAO
+      .getConfig(profileId, configId)
+      .map(_.map {
+        case configRow =>
+          Config(configRow.configId,
+                 ConfigName(configRow.name),
+                 ConfigType(configRow.`type`),
+                 ConfigValue(configRow.value))
+      })
   }
 
-  override def createConfig(applicationId: ApplicationId, profileId: ProfileId, configDraft: ConfigDraft): Future[ConfigId] = {
-    getPersistentActor(applicationId.value) ? CreateConfigCommand(profileId, ConfigId(UUID.randomUUID), configDraft.name, configDraft.`type`, configDraft.value) map {
+  override def createConfig(applicationId: ApplicationId,
+                            profileId: ProfileId,
+                            configDraft: ConfigDraft): Future[ConfigId] = {
+    getPersistentActor(applicationId.value) ? CreateConfigCommand(applicationId,
+                                                                  profileId,
+                                                                  ConfigId(UUID.randomUUID),
+                                                                  configDraft.name,
+                                                                  configDraft.`type`,
+                                                                  configDraft.value) map {
       case response: CreateConfigResponse => response.configId
     }
   }
 
-  override def updateConfig(applicationId: ApplicationId, profileId: ProfileId, configUpdate: ConfigUpdate): Future[Config] = {
+  override def updateConfig(applicationId: ApplicationId,
+                            profileId: ProfileId,
+                            configUpdate: ConfigUpdate): Future[Config] = {
     ???
   }
 }

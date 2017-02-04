@@ -9,9 +9,8 @@
       "email": "boris.malensek@zalando.de"
     }
   },
-  "host": "localhost:8080",
   "schemes": [
-    "https"
+    "http"
   ],
   "basePath": "/",
   "parameters": {
@@ -22,13 +21,37 @@
       "required": false,
       "type": "string",
       "format": "uuid"
+    },
+    "application-id": {
+      "name": "application-id",
+      "in": "path",
+      "description": "To identify application this operation is carried out for",
+      "required": true,
+      "type": "string",
+      "format": "uuid"
+    },
+    "profile-id": {
+      "name": "profile-id",
+      "in": "path",
+      "description": "To identify profile this operation is carried out for",
+      "required": true,
+      "type": "string",
+      "format": "uuid"
+    },
+    "config-id": {
+      "name": "config-id",
+      "in": "path",
+      "description": "To identify config this operation is carried out for",
+      "required": true,
+      "type": "string",
+      "format": "uuid"
     }
   },
   "paths": {
     "/applications": {
       "get": {
-        "summary": "Get all the applications",
-        "description": "Endpoint to retrieve all the applications unconditionally",
+        "summary": "Get all applications",
+        "description": "An endpoint to retrieve all applications unconditionally",
         "parameters": [
           {
             "$ref": "#/parameters/X-Flow-Id"
@@ -102,13 +125,59 @@
             }
           }
         }
-      },
-      "patch": {
-        "summary": "Update a specific application",
-        "description": "Update one or more attributes of a specific application",
+      }
+    },
+    "/applications/{application-id}": {
+      "get": {
+        "summary": "Retrieve a specific application",
+        "description": "An endpoint to retrieve a specific application",
         "parameters": [
           {
             "$ref": "#/parameters/X-Flow-Id"
+          },
+          {
+            "$ref": "#/parameters/application-id"
+          }
+        ],
+        "tags": [
+          "Application"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an application",
+            "schema": {
+              "$ref": "#/definitions/Application"
+            }
+          },
+          "404": {
+            "description": "A requested application does not exist",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "The default error handling",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update a specific application",
+        "description": "An endpoint to update one or more attributes of a specific application",
+        "parameters": [
+          {
+            "$ref": "#/parameters/X-Flow-Id"
+          },
+          {
+            "$ref": "#/parameters/application-id"
           }
         ],
         "tags": [
@@ -135,12 +204,353 @@
           }
         }
       }
+    },
+    "/applications/{application-id}/profiles": {
+      "get": {
+        "summary": "Get all profiles",
+        "description": "Endpoint to retrieve all profiles of a specific application unconditionally",
+        "parameters": [
+          {
+            "$ref": "#/parameters/X-Flow-Id"
+          },
+          {
+            "$ref": "#/parameters/application-id"
+          }
+        ],
+        "tags": [
+          "Profile"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list of profiles",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Profile"
+              }
+            }
+          },
+          "default": {
+            "description": "The default error handling",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new profile",
+        "description": "An endpoint allowing users to create a new profile for a given application.",
+        "parameters": [
+          {
+            "$ref": "#/parameters/X-Flow-Id"
+          },
+          {
+            "$ref": "#/parameters/application-id"
+          }
+        ],
+        "tags": [
+          "Profile"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "description": "The resource has been created and new profile ID is returned as a part of the header - Location",
+            "headers": {
+              "Location": {
+                "description": "The URL of the created profile",
+                "type": "string",
+                "format": "url"
+              }
+            },
+            "schema": {
+              "$ref": "#/definitions/Profile"
+            }
+          },
+          "400": {
+            "description": "The syntax of the payload is malformed",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "The default error handling",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/applications/{application-id}/profiles/{profile-id}": {
+      "get": {
+        "summary": "Retrieve a specific profile",
+        "description": "An endpoint to retrieve a specific profile",
+        "parameters": [
+          {
+            "$ref": "#/parameters/X-Flow-Id"
+          },
+          {
+            "$ref": "#/parameters/application-id"
+          },
+          {
+            "$ref": "#/parameters/profile-id"
+          }
+        ],
+        "tags": [
+          "Profile"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a profile",
+            "schema": {
+              "$ref": "#/definitions/Profile"
+            }
+          },
+          "404": {
+            "description": "A requested profile does not exist",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "The default error handling",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update a specific profile",
+        "description": "An endpoint to update one or more attributes of a specific profile",
+        "parameters": [
+          {
+            "$ref": "#/parameters/X-Flow-Id"
+          },
+          {
+            "$ref": "#/parameters/application-id"
+          },
+          {
+            "$ref": "#/parameters/profile-id"
+          }
+        ],
+        "tags": [
+          "Profile"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an updated profile",
+            "schema": {
+              "$ref": "#/definitions/Profile"
+            }
+          },
+          "default": {
+            "description": "The default error handling",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/applications/{application-id}/profiles/{profile-id}/configs": {
+      "get": {
+        "summary": "Get all profiles",
+        "description": "Endpoint to retrieve all profiles of a specific application unconditionally",
+        "parameters": [
+          {
+            "$ref": "#/parameters/X-Flow-Id"
+          },
+          {
+            "$ref": "#/parameters/application-id"
+          },
+          {
+            "$ref": "#/parameters/profile-id"
+          }
+        ],
+        "tags": [
+          "Config"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a list of profiles",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Profile"
+              }
+            }
+          },
+          "default": {
+            "description": "The default error handling",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new profile",
+        "description": "An endpoint allowing users to create a new profile for a given application.",
+        "parameters": [
+          {
+            "$ref": "#/parameters/X-Flow-Id"
+          },
+          {
+            "$ref": "#/parameters/application-id"
+          }
+        ],
+        "tags": [
+          "Profile"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "201": {
+            "description": "The resource has been created and new profile ID is returned as a part of the header - Location",
+            "headers": {
+              "Location": {
+                "description": "The URL of the created profile",
+                "type": "string",
+                "format": "url"
+              }
+            },
+            "schema": {
+              "$ref": "#/definitions/Profile"
+            }
+          },
+          "400": {
+            "description": "The syntax of the payload is malformed",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "The default error handling",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/applications/{application-id}/profiles/{profile-id}/configs/{config-id}": {
+      "get": {
+        "summary": "Retrieve a specific profile",
+        "description": "An endpoint to retrieve a specific profile",
+        "parameters": [
+          {
+            "$ref": "#/parameters/X-Flow-Id"
+          },
+          {
+            "$ref": "#/parameters/application-id"
+          },
+          {
+            "$ref": "#/parameters/profile-id"
+          }
+        ],
+        "tags": [
+          "Profile"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a profile",
+            "schema": {
+              "$ref": "#/definitions/Profile"
+            }
+          },
+          "404": {
+            "description": "A requested profile does not exist",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "default": {
+            "description": "The default error handling",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update a specific profile",
+        "description": "An endpoint to update one or more attributes of a specific profile",
+        "parameters": [
+          {
+            "$ref": "#/parameters/X-Flow-Id"
+          },
+          {
+            "$ref": "#/parameters/application-id"
+          },
+          {
+            "$ref": "#/parameters/profile-id"
+          }
+        ],
+        "tags": [
+          "Profile"
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an updated profile",
+            "schema": {
+              "$ref": "#/definitions/Profile"
+            }
+          },
+          "default": {
+            "description": "The default error handling",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
     "Application": {
       "type": "object",
-      "description": "An application that is defined by users",
+      "description": "An application that is defined by a user. An application must have a unique name.",
       "properties": {
         "application_id": {
           "type": "string",
@@ -150,13 +560,58 @@
         },
         "name": {
           "type": "string",
-          "description": "A human readable name of an application",
+          "description": "A human readable unique name of an application",
           "example": "My Super App"
         }
       },
       "required": [
         "name"
       ]
+    },
+    "Profile": {
+      "type": "object",
+      "description": "An application can have more profiles. A profile should have unique name for a particular application. Profile example usage could by environment like: 'production', 'test' etc.",
+      "properties": {
+        "profile_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "A unique identified of a profile",
+          "example": "7e6b4e8c-bd7b-424c-a1a2-eaf561a2b2d1"
+        },
+        "name": {
+          "type": "string",
+          "description": "A human readable unique name of a profile",
+          "example": "production"
+        }
+      }
+    },
+    "Config": {
+      "type": "object",
+      "description": "A profile can have multiple configs. A config should have a unique name for a particular profile.",
+      "properties": {
+        "config_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "A unique identifier for a config",
+          "example": "7e6b4e8c-bd7b-424c-a1a2-eaf561a2b2d1"
+        },
+        "name": {
+          "type": "string",
+          "description": "A human readable unique name of a config",
+          "example": "timeout"
+        },
+        "type": {
+          "type": "string",
+          "description": "A type of a config",
+          "example": "string",
+          "enum": ["string"]
+        },
+        "value": {
+          "type": "string",
+          "description": "A value of a give config in a give type",
+          "example": "20"
+        }
+      }
     },
     "Error": {
       "type": "object",

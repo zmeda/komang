@@ -99,13 +99,12 @@ trait Core extends Api with ConfigSupport with LazyLogging {
   Http().bindAndHandle(route, "0.0.0.0", 8080)
 }
 
-//trait Sharding { this: Core =>
-//
-//  val orderShardRegion: ActorRef = ClusterSharding(actorSystem).start(
-//    typeName = "application",
-//    entityProps = ApplicationAggregate.props,
-//    settings = ClusterShardingSettings(actorSystem).withStateStoreMode("ddata"),
-//    extractEntityId = ApplicationAggregate.extractEntityId,
-//    extractShardId = ApplicationAggregate.extractShardId
-//  )
-//}
+trait Sharding { this: Core =>
+  val orderShardRegion: ActorRef = ClusterSharding(actorSystem).start(
+    typeName = "application",
+    entityProps = ApplicationAggregate.props,
+    settings = ClusterShardingSettings(actorSystem).withStateStoreMode("ddata"),
+    extractEntityId = ApplicationAggregate.extractEntityId,
+    extractShardId = ApplicationAggregate.extractShardId
+  )
+}

@@ -13,7 +13,12 @@ case class ProfileCreatedEvent(applicationId: ApplicationId, profileId: ProfileI
 
 case class ProfileUpdatedEvent(applicationId: ApplicationId, profileId: ProfileId, name: ProfileName) extends Event
 
-case class ConfigCreatedEvent(profileId: ProfileId, configId: ConfigId, name: ConfigName, `type`: ConfigType, value: ConfigValue) extends Event
+case class ConfigCreatedEvent(profileId: ProfileId,
+                              configId: ConfigId,
+                              name: ConfigName,
+                              `type`: ConfigType,
+                              value: ConfigValue)
+    extends Event
 
 case class ConfigNameUpdatedEvent(profileId: ProfileId, configId: ConfigId, name: ConfigName) extends Event
 

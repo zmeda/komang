@@ -2,7 +2,11 @@ package org.zalando.komang.api
 
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.{Directives, ExceptionHandler, RejectionHandler}
-import org.zalando.komang.api.ApiModel.{ApplicationNotFoundException, ConfigNotFoundException, ProfileNotFoundException}
+import org.zalando.komang.api.ApiModel.{
+  ApplicationNotFoundException,
+  ConfigNotFoundException,
+  ProfileNotFoundException
+}
 
 import scala.util.control.NonFatal
 
@@ -24,10 +28,11 @@ trait CustomErrorHandler extends Directives {
       case ConfigNotFoundException(aId, pId, cId) =>
         extractLog { logger => ctx =>
           logger.error(s"A config with id {} does not exist for an application with id {} and a profile with id {}",
-            cId.value.toString,
-            aId.value.toString,
-            pId.value.toString)
-          ctx.complete((NotFound, s"A config with id $cId not found for an application with id $aId and a profile with id $pId"))
+                       cId.value.toString,
+                       aId.value.toString,
+                       pId.value.toString)
+          ctx.complete(
+            (NotFound, s"A config with id $cId not found for an application with id $aId and a profile with id $pId"))
         }
       case NonFatal(e) =>
         extractLog { logger => ctx =>

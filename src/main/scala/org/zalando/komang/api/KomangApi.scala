@@ -46,15 +46,19 @@ trait KomangApi extends KomangController {
               pathEndOrSingleSlash {
                 get {
                   getConfigs(applicationId, profileId)
+                } ~
+                post {
+                  createConfig(applicationId, profileId)
                 }
-                post {}
               } ~
               pathPrefix(ConfigIdentity) { configId =>
                 pathEndOrSingleSlash {
                   get {
                     getConfig(applicationId, profileId, configId)
+                  } ~
+                  patch {
+                    updateConfig(applicationId, profileId, configId)
                   }
-                  patch {}
                 }
               }
             }

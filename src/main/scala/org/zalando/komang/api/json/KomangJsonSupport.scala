@@ -4,7 +4,7 @@ import java.util.UUID
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import org.zalando.komang.api.json.SprayJsonReadSupport._
-import org.zalando.komang.api.ApiModel.{ApplicationDraft, ApplicationUpdate, ProfileDraft, ProfileUpdate}
+import org.zalando.komang.api.ApiModel._
 import org.zalando.komang.model.Model._
 import spray.json._
 
@@ -213,6 +213,46 @@ trait KomangJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
           ConfigValue(str)
         case x => deserializationError(s"Expected type String but got $x")
       }
+  }
+
+  implicit object ConfigDraftFormat extends RootJsonFormat[ConfigDraft] {
+    override def write(configDraft: ConfigDraft): JsValue = {
+      val name = Some("name" -> configDraft.name.toJson)
+      val `type` = Some("type" -> configDraft.`type`.toJson)
+      val value = Some("value" -> configDraft.value.toJson)
+      JsObject(collectSome(name, `type`, value) toMap)
+    }
+
+    override def read(json: JsValue): ConfigDraft = {
+      val obj = json.asJsObject
+      val name = (obj \ "name").convertTo[ConfigName]
+      val `type` = (obj \ "type").convertTo[ConfigType]
+      val value = (obj \ "value").convertTo[ConfigValue]
+      ConfigDraft(name, `type`, value)
+    }
+  }
+
+  implicit object ConfigUpdateFormat extends RootJsonFormat[ConfigUpdate] {
+    override def write(configUpdate: ConfigUpdate): JsValue = {
+      val name = configUpdate.name.map("name" -> _.toJson)
+      val `type` = configUpdate.`type`.map("type" -> _.toJson)
+      val value = configUpdate.value.map("value" -> _.toJson)
+      JsObject(collectSome(name, `type`, value) toMap)
+    }
+
+    override def read(json: JsValue): ConfigUpdate = {
+      val obj = json.asJsObject
+      val name = (obj \? "name").map(_.convertTo[ConfigName])
+      val `type` = (obj \? "type").map(_.convertTo[ConfigType])
+      val value = (obj \? "value").map(_.convertTo[ConfigValue])
+      ConfigUpdate(name, `type`, value)
+    }
+  }
+
+  implicit object ErrorFormat extends RootJsonFormat[Error] {
+    override def write(error: Error): JsValue = ???
+
+    override def read(json: JsValue): Error = ???
   }
 
   private def parseUuidString(token: String): Option[UUID] = {
