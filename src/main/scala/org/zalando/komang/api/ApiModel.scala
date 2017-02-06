@@ -15,7 +15,7 @@ object ApiModel {
 
     case class InternalErrorCode(value: String)
 
-    case class ErrorDescription(value: UUID)
+    case class ErrorDescription(value: String)
   }
 
   case class ApplicationDraft(name: ApplicationName)

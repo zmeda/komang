@@ -3,6 +3,7 @@ package org.zalando.komang.api.json
 import java.util.UUID
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import org.zalando.komang.api.ApiModel.Error.{ErrorCode, ErrorDescription, ErrorId, InternalErrorCode}
 import org.zalando.komang.api.json.SprayJsonReadSupport._
 import org.zalando.komang.api.ApiModel._
 import org.zalando.komang.model.Model._
@@ -250,9 +251,73 @@ trait KomangJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   }
 
   implicit object ErrorFormat extends RootJsonFormat[Error] {
-    override def write(error: Error): JsValue = ???
+    override def write(error: Error): JsValue = {
+      val errorId = Some("error_id" -> error.errorId.toJson)
+      val code = Some("code" -> error.code.toJson)
+      val internalCode = Some("internal_code" -> error.internalCode.toJson)
+      val description = Some("description" -> error.description.toJson)
+      JsObject(collectSome(errorId, code, internalCode, description) toMap)
+    }
 
-    override def read(json: JsValue): Error = ???
+    override def read(json: JsValue): Error = {
+      val obj = json.asJsObject
+      val errorId = (obj \ "error_id").convertTo[ErrorId]
+      val code = (obj \ "code").convertTo[ErrorCode]
+      val internalCode = (obj \ "internal_code").convertTo[InternalErrorCode]
+      val description = (obj \ "description").convertTo[ErrorDescription]
+      Error(errorId, code, internalCode, description)
+    }
+  }
+
+  implicit object ErrorIdFormat extends JsonFormat[ErrorId] {
+    override def write(errorId: ErrorId): JsValue =
+      JsString(errorId.value.toString)
+
+    override def read(json: JsValue): ErrorId =
+      json match {
+        case JsString(str) =>
+          parseUuidString(str) match {
+            case None => deserializationError(s"Expected UUID but got $str")
+            case Some(uuid) => ErrorId(uuid)
+          }
+        case x => deserializationError(s"Expected type String but got $x")
+      }
+  }
+
+  implicit object ErrorCodeFormat extends JsonFormat[ErrorCode] {
+    override def write(code: ErrorCode): JsValue =
+      JsString(code.value.toString)
+
+    override def read(json: JsValue): ErrorCode =
+      json match {
+        case JsNumber(number) =>
+          ErrorCode(number.toInt)
+        case x => deserializationError(s"Expected type String but got $x")
+      }
+  }
+
+  implicit object InternalErrorCodeFormat extends JsonFormat[InternalErrorCode] {
+    override def write(internalCode: InternalErrorCode): JsValue =
+      JsString(internalCode.value.toString)
+
+    override def read(json: JsValue): InternalErrorCode =
+      json match {
+        case JsString(str) =>
+          InternalErrorCode(str)
+        case x => deserializationError(s"Expected type String but got $x")
+      }
+  }
+
+  implicit object ErrorDescriptionFormat extends JsonFormat[ErrorDescription] {
+    override def write(description: ErrorDescription): JsValue =
+      JsString(description.value.toString)
+
+    override def read(json: JsValue): ErrorDescription =
+      json match {
+        case JsString(str) =>
+          ErrorDescription(str)
+        case x => deserializationError(s"Expected type String but got $x")
+      }
   }
 
   private def parseUuidString(token: String): Option[UUID] = {
