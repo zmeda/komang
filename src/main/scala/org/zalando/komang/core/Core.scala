@@ -22,8 +22,8 @@ import concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.control.NonFatal
 
-trait Core extends Api with ConfigSupport with LazyLogging {
-  implicit val actorSystem = ActorSystem()
+trait Core extends Api with ConfigSupport with LazyLogging with Sharding {
+  implicit lazy val actorSystem = ActorSystem("KomangSystem")
   implicit val ec: ExecutionContext = actorSystem.dispatcher
   implicit val log: LoggingAdapter = Logging(actorSystem, getClass)
   implicit val materializer: ActorMaterializer = ActorMaterializer()
@@ -39,7 +39,7 @@ trait Core extends Api with ConfigSupport with LazyLogging {
 
   val komangDAO = new KomangDAOImpl()
 
-  override def komangService: KomangService = new KomangServiceCQRSImpl(komangDAO)
+  override def komangService: KomangService = new KomangServiceCQRSImpl(komangDAO, applicationShardRegion)
 
   val readJournal = PersistenceQuery(actorSystem).readJournalFor[LeveldbReadJournal](LeveldbReadJournal.Identifier)
 
@@ -100,7 +100,7 @@ trait Core extends Api with ConfigSupport with LazyLogging {
 }
 
 trait Sharding { this: Core =>
-  val orderShardRegion: ActorRef = ClusterSharding(actorSystem).start(
+  val applicationShardRegion: ActorRef = ClusterSharding(actorSystem).start(
     typeName = "application",
     entityProps = ApplicationAggregate.props,
     settings = ClusterShardingSettings(actorSystem).withStateStoreMode("ddata"),

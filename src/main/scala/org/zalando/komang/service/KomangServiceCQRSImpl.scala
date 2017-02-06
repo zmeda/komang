@@ -2,11 +2,10 @@ package org.zalando.komang.service
 
 import java.util.UUID
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.util.Timeout
 import org.zalando.komang.api.ApiModel._
-import org.zalando.komang.command.ApplicationAggregate
 import org.zalando.komang.model.Model._
 import org.zalando.komang.model.command._
 import org.zalando.komang.model.response._
@@ -15,13 +14,13 @@ import org.zalando.komang.query.KomangDAO
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 
-class KomangServiceCQRSImpl(komangDAO: KomangDAO)(implicit val actorSystem: ActorSystem) extends KomangService {
+class KomangServiceCQRSImpl(komangDAO: KomangDAO, shardingRegion: ActorRef)(implicit val ec: ExecutionContext,
+                                                                            implicit val actorSystem: ActorSystem)
+    extends KomangService {
   implicit val timeout: Timeout = Timeout(500.millis)
 
-  implicit val ec: ExecutionContext = actorSystem.dispatcher
-
-  private def getPersistentActor(applicationIdUUID: UUID) =
-    actorSystem.actorOf(ApplicationAggregate.props, applicationIdUUID.toString)
+  private def getPersistentActor(applicationIdUUID: UUID): ActorRef =
+    shardingRegion
 
   override def listApplications: Future[Vector[Application]] = {
     komangDAO
