@@ -19,9 +19,6 @@ class KomangServiceCQRSImpl(komangDAO: KomangDAO, shardingRegion: ActorRef)(impl
     extends KomangService {
   implicit val timeout: Timeout = Timeout(500.millis)
 
-  private def getPersistentActor(applicationIdUUID: UUID): ActorRef =
-    shardingRegion
-
   override def listApplications: Future[Vector[Application]] = {
     komangDAO
       .getAllApplications()
@@ -33,7 +30,7 @@ class KomangServiceCQRSImpl(komangDAO: KomangDAO, shardingRegion: ActorRef)(impl
 
   override def createApplication(applicationDraft: ApplicationDraft): Future[ApplicationId] = {
     val applicationIdUUID = UUID.randomUUID
-    getPersistentActor(applicationIdUUID) ? CreateApplicationCommand(ApplicationId(applicationIdUUID),
+    shardingRegion ? CreateApplicationCommand(ApplicationId(applicationIdUUID),
                                                                      applicationDraft.name) map {
       case response: CreateApplicationResponse => response.applicationId
     }
@@ -50,7 +47,7 @@ class KomangServiceCQRSImpl(komangDAO: KomangDAO, shardingRegion: ActorRef)(impl
 
   override def updateApplication(applicationId: ApplicationId,
                                  applicationUpdate: ApplicationUpdate): Future[Application] = {
-    getPersistentActor(applicationId.value) ? UpdateApplicationCommand(applicationId, applicationUpdate.name) map {
+    shardingRegion ? UpdateApplicationCommand(applicationId, applicationUpdate.name) map {
       case response: UpdateApplicationResponse => response.application
     }
   }
@@ -74,7 +71,7 @@ class KomangServiceCQRSImpl(komangDAO: KomangDAO, shardingRegion: ActorRef)(impl
 
   override def createProfile(applicationId: ApplicationId,
                              profileDraft: ProfileDraft): Future[(ApplicationId, ProfileId)] = {
-    getPersistentActor(applicationId.value) ? CreateProfileCommand(applicationId,
+    shardingRegion ? CreateProfileCommand(applicationId,
                                                                    ProfileId(UUID.randomUUID),
                                                                    profileDraft.name) map {
       case response: CreateProfileResponse => (response.applicationId, response.profileId)
@@ -84,7 +81,7 @@ class KomangServiceCQRSImpl(komangDAO: KomangDAO, shardingRegion: ActorRef)(impl
   override def updateProfile(applicationId: ApplicationId,
                              profileId: ProfileId,
                              profileUpdate: ProfileUpdate): Future[Profile] = {
-    getPersistentActor(applicationId.value) ? UpdateProfileCommand(applicationId, profileId, profileUpdate.name) map {
+    shardingRegion ? UpdateProfileCommand(applicationId, profileId, profileUpdate.name) map {
       case response: UpdateProfileResponse => response.profile
     }
   }
@@ -116,7 +113,7 @@ class KomangServiceCQRSImpl(komangDAO: KomangDAO, shardingRegion: ActorRef)(impl
   override def createConfig(applicationId: ApplicationId,
                             profileId: ProfileId,
                             configDraft: ConfigDraft): Future[ConfigId] = {
-    getPersistentActor(applicationId.value) ? CreateConfigCommand(applicationId,
+    shardingRegion ? CreateConfigCommand(applicationId,
                                                                   profileId,
                                                                   ConfigId(UUID.randomUUID),
                                                                   configDraft.name,

@@ -23,8 +23,6 @@ lazy val libDeps = Seq(
   "com.typesafe.akka" %% "akka-persistence-query-experimental" % "2.4.16",
   "com.typesafe.akka" %% "akka-cluster" % "2.4.16",
   "com.typesafe.akka" %% "akka-cluster-sharding" % "2.4.16",
-//  "com.typesafe.akka" %% "akka-cluster-tools" % "2.4.16",
-//  "com.typesafe.akka" %% "akka-cluster-metrics" % "2.4.16",
   "com.typesafe.akka" %% "akka-distributed-data-experimental" % "2.4.16",
   "com.typesafe.akka" %% "akka-slf4j" % "2.4.16",
   "com.typesafe.akka" %% "akka-http" % "10.0.1",
