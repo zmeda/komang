@@ -2,10 +2,11 @@ package org.zalando.komang.api.controller
 
 import akka.http.scaladsl.model.{HttpEntity, HttpResponse, StatusCodes}
 import akka.http.scaladsl.model.headers.Location
-import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server.{Directive1, RequestContext, Route}
 import akka.http.scaladsl.server.Directives._
 import org.zalando.komang.api.json.KomangJsonSupport
 import org.zalando.komang.api.ApiModel._
+import org.zalando.komang.api.KomangRequestContext
 import org.zalando.komang.model.Model.{ApplicationId, ConfigId, ProfileId}
 import org.zalando.komang.service.KomangService
 
@@ -17,7 +18,12 @@ trait KomangController extends KomangJsonSupport {
 
   implicit def ec: ExecutionContext
 
-  def getApplications: Route = {
+  protected def extractExtendedContext[T <: RequestContext]: Directive1[T] =
+    extract[T](_.asInstanceOf[T])
+
+  protected def KomangAction = extractExtendedContext[KomangRequestContext]
+
+  def getApplications: Route = KomangAction { context =>
     complete(komangService.listApplications)
   }
 
@@ -87,8 +93,13 @@ trait KomangController extends KomangJsonSupport {
     }
   }
 
-  def getConfigs(applicationId: ApplicationId, profileId: ProfileId): Route = {
-    complete(komangService.listConfigs(profileId))
+  def getConfigs(applicationId: ApplicationId, profileId: ProfileId): Route = KomangAction { ctx =>
+    parameters(
+      'pretty.?
+    ) { (pretty: Option[String]) =>
+      implicit val updatedKomangContext = ctx.copy(pretty = pretty.map(_.toBoolean))
+      complete(komangService.listConfigs(profileId))
+    }
   }
 
   def getConfig(applicationId: ApplicationId, profileId: ProfileId, configId: ConfigId): Route = {
@@ -118,7 +129,7 @@ trait KomangController extends KomangJsonSupport {
 
   def updateConfig(applicationId: ApplicationId, profileId: ProfileId, configId: ConfigId): Route = {
     entity(as[ConfigUpdate]) { configUpdate =>
-      complete(komangService.updateConfig(applicationId, profileId, configUpdate))
+      complete(komangService.updateConfig(applicationId, profileId, configId, configUpdate))
     }
   }
 }

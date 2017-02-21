@@ -10,7 +10,7 @@ import org.zalando.komang.api.ApiModel.{
 
 import scala.util.control.NonFatal
 
-trait CustomErrorHandler extends Directives {
+trait CustomErrorHandler extends KomangDirectives {
   implicit def rootExceptionHandler: ExceptionHandler =
     ExceptionHandler {
       case ApplicationNotFoundException(aId) =>

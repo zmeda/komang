@@ -28,5 +28,8 @@ trait KomangService {
 
   def createConfig(applicationId: ApplicationId, profileId: ProfileId, configDraft: ConfigDraft): Future[ConfigId]
 
-  def updateConfig(applicationId: ApplicationId, profileId: ProfileId, configUpdate: ConfigUpdate): Future[Config]
+  def updateConfig(applicationId: ApplicationId,
+                   profileId: ProfileId,
+                   configId: ConfigId,
+                   configUpdate: ConfigUpdate): Future[Config]
 }

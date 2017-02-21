@@ -30,8 +30,7 @@ class KomangServiceCQRSImpl(komangDAO: KomangDAO, shardingRegion: ActorRef)(impl
 
   override def createApplication(applicationDraft: ApplicationDraft): Future[ApplicationId] = {
     val applicationIdUUID = UUID.randomUUID
-    shardingRegion ? CreateApplicationCommand(ApplicationId(applicationIdUUID),
-                                                                     applicationDraft.name) map {
+    shardingRegion ? CreateApplicationCommand(ApplicationId(applicationIdUUID), applicationDraft.name) map {
       case response: CreateApplicationResponse => response.applicationId
     }
   }
@@ -71,9 +70,7 @@ class KomangServiceCQRSImpl(komangDAO: KomangDAO, shardingRegion: ActorRef)(impl
 
   override def createProfile(applicationId: ApplicationId,
                              profileDraft: ProfileDraft): Future[(ApplicationId, ProfileId)] = {
-    shardingRegion ? CreateProfileCommand(applicationId,
-                                                                   ProfileId(UUID.randomUUID),
-                                                                   profileDraft.name) map {
+    shardingRegion ? CreateProfileCommand(applicationId, ProfileId(UUID.randomUUID), profileDraft.name) map {
       case response: CreateProfileResponse => (response.applicationId, response.profileId)
     }
   }
@@ -114,18 +111,26 @@ class KomangServiceCQRSImpl(komangDAO: KomangDAO, shardingRegion: ActorRef)(impl
                             profileId: ProfileId,
                             configDraft: ConfigDraft): Future[ConfigId] = {
     shardingRegion ? CreateConfigCommand(applicationId,
-                                                                  profileId,
-                                                                  ConfigId(UUID.randomUUID),
-                                                                  configDraft.name,
-                                                                  configDraft.`type`,
-                                                                  configDraft.value) map {
+                                         profileId,
+                                         ConfigId(UUID.randomUUID),
+                                         configDraft.name,
+                                         configDraft.`type`,
+                                         configDraft.value) map {
       case response: CreateConfigResponse => response.configId
     }
   }
 
   override def updateConfig(applicationId: ApplicationId,
                             profileId: ProfileId,
+                            configId: ConfigId,
                             configUpdate: ConfigUpdate): Future[Config] = {
-    ???
+    shardingRegion ? UpdateConfigCommand(applicationId,
+                                         profileId,
+                                         configId,
+                                         configUpdate.name,
+                                         configUpdate.`type`,
+                                         configUpdate.value) map {
+      case response: UpdateConfigResponse => response.config
+    }
   }
 }

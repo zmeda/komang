@@ -3,9 +3,10 @@ package org.zalando.komang.api.json
 import java.util.UUID
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import org.zalando.komang.api.ApiModel.Error.{ErrorCode, ErrorDescription, ErrorId, InternalErrorCode}
+import org.zalando.komang.api.ApiModel.Error._
 import org.zalando.komang.api.json.SprayJsonReadSupport._
 import org.zalando.komang.api.ApiModel._
+import org.zalando.komang.api.KomangRequestContext
 import org.zalando.komang.model.Model._
 import spray.json._
 
@@ -14,7 +15,7 @@ trait KomangJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
     override def write(application: Application): JsValue = {
       val applicationId = Some("application_id" -> application.applicationId.toJson)
       val name = Some("name" -> application.name.toJson)
-      JsObject(collectSome(applicationId, name) toMap)
+      JsObject(collectSome(applicationId, name).toMap)
     }
 
     override def read(json: JsValue): Application = {
@@ -28,7 +29,7 @@ trait KomangJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit object ApplicationDraftFormat extends RootJsonFormat[ApplicationDraft] {
     override def write(applicationDraft: ApplicationDraft): JsValue = {
       val name = Some("name" -> applicationDraft.name.toJson)
-      JsObject(collectSome(name) toMap)
+      JsObject(collectSome(name).toMap)
     }
 
     override def read(json: JsValue): ApplicationDraft = {
@@ -41,7 +42,7 @@ trait KomangJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit object ApplicationUpdateFormat extends RootJsonFormat[ApplicationUpdate] {
     override def write(applicationUpdate: ApplicationUpdate): JsValue = {
       val name = Some("name" -> applicationUpdate.name.toJson)
-      JsObject(collectSome(name) toMap)
+      JsObject(collectSome(name).toMap)
     }
 
     override def read(json: JsValue): ApplicationUpdate = {
@@ -81,7 +82,7 @@ trait KomangJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit object ProfileDraftFormat extends RootJsonFormat[ProfileDraft] {
     override def write(profileDraft: ProfileDraft): JsValue = {
       val name = Some("name" -> profileDraft.name.toJson)
-      JsObject(collectSome(name) toMap)
+      JsObject(collectSome(name).toMap)
     }
 
     override def read(json: JsValue): ProfileDraft = {
@@ -94,7 +95,7 @@ trait KomangJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit object ProfileUpdateFormat extends RootJsonFormat[ProfileUpdate] {
     override def write(profileUpdate: ProfileUpdate): JsValue = {
       val name = Some("name" -> profileUpdate.name.toJson)
-      JsObject(collectSome(name) toMap)
+      JsObject(collectSome(name).toMap)
     }
 
     override def read(json: JsValue): ProfileUpdate = {
@@ -120,7 +121,7 @@ trait KomangJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
     override def write(profile: Profile): JsValue = {
       val profileId = Some("profile_id" -> profile.profileId.toJson)
       val name = Some("name" -> profile.name.toJson)
-      JsObject(collectSome(profileId, name) toMap)
+      JsObject(collectSome(profileId, name).toMap)
     }
 
     override def read(json: JsValue): Profile = {
@@ -146,13 +147,29 @@ trait KomangJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
       }
   }
 
+  implicit def configsFormat(implicit context: KomangRequestContext) = new RootJsonFormat[Vector[Config]] {
+    override def write(configs: Vector[Config]): JsValue = {
+      context.pretty match {
+        case Some(true) => JsObject(configs.map(c => c.name.value -> c.value.toJson).toMap)
+        case _ => JsArray(configs.map(_.toJson))
+      }
+    }
+
+    override def read(json: JsValue): Vector[Config] = {
+      json match {
+        case JsArray(elements) =>
+          elements.map(_.convertTo[Config])
+      }
+    }
+  }
+
   implicit object ConfigFormat extends RootJsonFormat[Config] {
     override def write(config: Config): JsValue = {
       val profileId = Some("config_id" -> config.configId.toJson)
       val name = Some("name" -> config.name.toJson)
       val `type` = Some("type" -> config.`type`.toJson)
       val value = Some("value" -> config.value.toJson)
-      JsObject(collectSome(profileId, name, `type`, value) toMap)
+      JsObject(collectSome(profileId, name, `type`, value).toMap)
     }
 
     override def read(json: JsValue): Config = {
@@ -221,7 +238,7 @@ trait KomangJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
       val name = Some("name" -> configDraft.name.toJson)
       val `type` = Some("type" -> configDraft.`type`.toJson)
       val value = Some("value" -> configDraft.value.toJson)
-      JsObject(collectSome(name, `type`, value) toMap)
+      JsObject(collectSome(name, `type`, value).toMap)
     }
 
     override def read(json: JsValue): ConfigDraft = {
@@ -238,7 +255,7 @@ trait KomangJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
       val name = configUpdate.name.map("name" -> _.toJson)
       val `type` = configUpdate.`type`.map("type" -> _.toJson)
       val value = configUpdate.value.map("value" -> _.toJson)
-      JsObject(collectSome(name, `type`, value) toMap)
+      JsObject(collectSome(name, `type`, value).toMap)
     }
 
     override def read(json: JsValue): ConfigUpdate = {
@@ -256,7 +273,7 @@ trait KomangJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
       val code = Some("code" -> error.code.toJson)
       val internalCode = Some("internal_code" -> error.internalCode.toJson)
       val description = Some("description" -> error.description.toJson)
-      JsObject(collectSome(errorId, code, internalCode, description) toMap)
+      JsObject(collectSome(errorId, code, internalCode, description).toMap)
     }
 
     override def read(json: JsValue): Error = {

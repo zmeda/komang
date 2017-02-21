@@ -1,63 +1,66 @@
 package org.zalando.komang.api
 
-import akka.http.scaladsl.server.Directives._
 import org.zalando.komang.api.controller.KomangController
 import org.zalando.komang.api.TypedIdPathMatchers._
+
 // format: off
-trait KomangApi extends KomangController {
+trait KomangApi extends KomangController with KomangDirectives {
   val komangRoute = {
-    pathPrefix("applications") {
-      pathEndOrSingleSlash {
-        get {
-          getApplications
-        } ~
-        post {
-          createApplication
-        }
-      } ~
-      pathPrefix(ApplicationIdentity) { applicationId =>
+    injectKomangRequestContext {
+    //{
+      pathPrefix("applications") {
         pathEndOrSingleSlash {
           get {
-            getApplication(applicationId)
+            getApplications
           } ~
-          patch {
-            updateApplication(applicationId)
+          post {
+            createApplication
           }
         } ~
-        pathPrefix("profiles") {
+        pathPrefix(ApplicationIdentity) { applicationId =>
           pathEndOrSingleSlash {
             get {
-              getProfiles(applicationId)
+              getApplication(applicationId)
             } ~
-            post {
-              createProfile(applicationId)
+            patch {
+              updateApplication(applicationId)
             }
           } ~
-          pathPrefix(ProfileIdentity) { profileId =>
+          pathPrefix("profiles") {
             pathEndOrSingleSlash {
               get {
-                getProfile(applicationId, profileId)
+                getProfiles(applicationId)
               } ~
-              patch {
-                updateProfile(applicationId, profileId)
+              post {
+                createProfile(applicationId)
               }
             } ~
-            pathPrefix("configs") {
+            pathPrefix(ProfileIdentity) { profileId =>
               pathEndOrSingleSlash {
                 get {
-                  getConfigs(applicationId, profileId)
+                  getProfile(applicationId, profileId)
                 } ~
-                post {
-                  createConfig(applicationId, profileId)
+                patch {
+                  updateProfile(applicationId, profileId)
                 }
               } ~
-              pathPrefix(ConfigIdentity) { configId =>
+              pathPrefix("configs") {
                 pathEndOrSingleSlash {
                   get {
-                    getConfig(applicationId, profileId, configId)
+                    getConfigs(applicationId, profileId)
                   } ~
-                  patch {
-                    updateConfig(applicationId, profileId, configId)
+                  post {
+                    createConfig(applicationId, profileId)
+                  }
+                } ~
+                pathPrefix(ConfigIdentity) { configId =>
+                  pathEndOrSingleSlash {
+                    get {
+                      getConfig(applicationId, profileId, configId)
+                    } ~
+                    patch {
+                      updateConfig(applicationId, profileId, configId)
+                    }
                   }
                 }
               }
